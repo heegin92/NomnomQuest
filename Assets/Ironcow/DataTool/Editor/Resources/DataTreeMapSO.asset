@@ -125,25 +125,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 465ffef5fd11ad14d991158cff731771, type: 2}
     - {fileID: 11400000, guid: 3a88beed39c908c4bbfb590d48336b8c, type: 2}
     - {fileID: 11400000, guid: 44c339bcdd570de45ab9afcd28d58cfe, type: 2}
-  - className: MapData
-    sheetId: 763059739
-    key: MAP
-    isUpdate: 0
-    items:
-    - {fileID: 11400000, guid: 0ed7db7796e5b99458b50a8886c2456d, type: 2}
-    - {fileID: 11400000, guid: c6f100ee64652e14d8e10aefd6f4784d, type: 2}
-    - {fileID: 11400000, guid: 1afde5d9e833ee54184fc554d736b8e7, type: 2}
-    - {fileID: 11400000, guid: 5944280d6f2b5434f9682d105dc0783d, type: 2}
-    - {fileID: 11400000, guid: ca184a1e964fb3f4496aabc979279c72, type: 2}
-    - {fileID: 11400000, guid: dfafa0060a6872f49b02cbe7e5551328, type: 2}
-    - {fileID: 11400000, guid: 3ee9d13c1716fd24f8e0b843ad31b309, type: 2}
-    - {fileID: 11400000, guid: c7c61c5fee523424f80df125446bf0a3, type: 2}
-    - {fileID: 11400000, guid: b5714d6bb8855e949b0c157a483bf7ed, type: 2}
-    - {fileID: 11400000, guid: f634338eedb88bd4091d9bf536df80eb, type: 2}
-    - {fileID: 11400000, guid: a3cd05737be3e2b4fb84f4b198634451, type: 2}
-    - {fileID: 11400000, guid: 6e0e83404a61a76468632e5a43373ca7, type: 2}
-    - {fileID: 11400000, guid: 1ee179f8913342440b7ba9aa0579b297, type: 2}
-    - {fileID: 11400000, guid: f7582eb9d7baaaa4ca708edf2fb317d1, type: 2}
   - className: WorldObjectData
     sheetId: 1529108324
     key: WOB
