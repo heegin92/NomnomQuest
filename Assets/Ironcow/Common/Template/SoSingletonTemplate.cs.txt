@@ -1,0 +1,6 @@
+using Ironcow.Synapse;
+
+public class #SCRIPTNAME# : SOSingleton<#SCRIPTNAME#>
+{
+	
+}

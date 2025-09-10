@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d800cc27bf1891d46a2e460555406951, type: 3}
+  m_Name: ITE00051
+  m_EditorClassIdentifier: 
+  rcode: ITE00051
+  name: 
+  desc: 
+  displayName: "\uD070\uC120\uBB3C"
+  description: "\uBB35\uC9C1\uD55C \uBCF4\uBB3C \uC0C1\uC790."
+  type: 3
+  canStack: 0
+  maxStackAmount: 0
+  hp: 0
+  mp: 0
+  hungry: 0
+  effect: 0
+  equipPrefab: 

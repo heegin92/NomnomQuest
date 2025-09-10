@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6e95d3eb28042142a348c5b79208a97, type: 3}
+  m_Name: EditorDataSetting
+  m_EditorClassIdentifier: 
+  prefabFolders: []
+  scenePath:
+  - {fileID: 0}
+  introScene: {fileID: 0}
+  dontDestroyScene: {fileID: 0}
+  createEditorPrefabPath: {fileID: 102900000, guid: f6e940462ebb8ff41ba67703eac4b068, type: 3}
+  settingSOPath: {fileID: 102900000, guid: 8c6252563ff9d35449b36a280eea9a94, type: 3}
+  scriptPath: {fileID: 102900000, guid: 9183312ec6f8c944d9151b12fe9897fb, type: 3}
+  createAssetPrefabPath: {fileID: 102900000, guid: 575a567c27674d3458b448822164f9d2, type: 3}
+  resourceTypeTarget: {fileID: 11500000, guid: 1eb4f1f1bb67bd243838ae77eb27a54a, type: 3}

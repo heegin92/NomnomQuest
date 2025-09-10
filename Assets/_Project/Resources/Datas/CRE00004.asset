@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8684434f9f649434cb7ade9393478520, type: 3}
+  m_Name: CRE00004
+  m_EditorClassIdentifier: 
+  rcode: CRE00004
+  name: 
+  desc: 
+  displayName: "\uCE7C \uC81C\uC791"
+  materials: ITE00017
+  counts: 2
+  createItem: ITE00005
+  needObject: BOB00002

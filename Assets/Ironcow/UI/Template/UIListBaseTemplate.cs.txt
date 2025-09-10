@@ -1,0 +1,37 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Ironcow.Synapse;
+using UnityEngine.UI;
+using TMPro;
+using Ironcow.Synapse.UI;
+
+public class #SCRIPTNAME# : UIListBase<UIListItem>
+{
+    public override void Opened(object[] param)
+    {
+        base.Opened(param);
+        SetList();
+    }
+
+    public override void HideDirect()
+    {
+        UIManager.Hide<#SCRIPTNAME#>();
+    }
+
+    public override void SetList()
+    {
+        ClearList();
+        var datas = DataManager.instance.GetDatas<BaseDataSO>();
+        foreach (var data in datas)
+        {
+            var item = AddItem();
+            item.SetData(data, OnClickItem);
+        }
+    }
+
+    public void OnClickItem( data)
+    {
+        
+    }
+}

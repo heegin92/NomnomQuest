@@ -1,0 +1,8 @@
+using System.Collections.Generic;
+using Ironcow.Synapse.Data;
+
+[CreateAssetMenu(fileName = "#SCRIPTNAME#", menuName = "ScriptableObjects/#SCRIPTNAME#")]
+public partial class #SCRIPTNAME# : BaseDataSO
+{
+	
+}

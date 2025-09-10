@@ -1,0 +1,11 @@
+using Ironcow.Synapse;
+using System.Threading.Tasks;
+using UnityEngine.Events;
+
+public class #SCRIPTNAME# : ManagerBase<#SCRIPTNAME#>
+{
+    public async override Task Init(UnityAction<string> progressTextCallback = null, UnityAction<float> progressValueCallback = null)
+    {
+
+    }
+}

@@ -1,0 +1,20 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Ironcow.Synapse;
+using UnityEngine.UI;
+using Ironcow.Synapse.UI;
+
+public class #SCRIPTNAME# : UIBase
+{
+    public override void Opened(object[] param)
+    {
+        base.Opened(param);
+        
+    }
+
+    public override void HideDirect()
+    {
+        UIManager.Hide<#SCRIPTNAME#>();
+    }
+}

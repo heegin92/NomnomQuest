@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d739b99b4d579e43a9bbf1fcd51e21c, type: 3}
+  m_Name: BRE00001
+  m_EditorClassIdentifier: 
+  rcode: BRE00001
+  name: 
+  desc: 
+  displayName: "\uC791\uC5C5\uB300"
+  materials: ITE00039
+  counts: 5
+  createItem: BOB00001
