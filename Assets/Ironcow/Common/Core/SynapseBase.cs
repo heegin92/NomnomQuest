@@ -5,7 +5,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 using Ironcow.Synapse.Core;
-using Ironcow.Synapse.Sample.Common;
 
 using UnityEngine;
 using UnityEngine.UIElements;

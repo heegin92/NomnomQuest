@@ -896,7 +896,7 @@ MonoBehaviour:
   moveSpeed: 8
   attackRange: 2
   attackCooldown: 1
-  attackDamage: 10
+  attackDamage: 3
   hud: {fileID: 0}
 --- !u!136 &3106233151141584681
 CapsuleCollider:

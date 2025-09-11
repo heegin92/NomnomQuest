@@ -1,30 +1,23 @@
+ï»¿using System;
 using Ironcow.Synapse.Data;
-using System;
 using UnityEngine;
 
 [System.Serializable]
-[CreateAssetMenu(fileName = "EnemyData", menuName = "Game/Enemy Data")]
-public class EnemyData : ScriptableObject
+public partial class EnemyData : BaseDataSO
 {
-    [Header("±âº» Á¤º¸")]
-    public string rcode;
     public string displayName;
-    [TextArea]
     public string description;
-
-    [Header("´É·ÂÄ¡")]
-    public int maxHp;
+    public int hp;
     public int def;
     public int atk;
-    public float walkSpeed;
-
-    [Header("º¸»ó")]
+    public int walkSpeed;
     public int exp;
     public int gold;
+    public int detectRange;
+    public int atkRange;
+    public int attackCooldown;
 
-    [Header("µå¶ø ¾ÆÀÌÅÛ")]
-    public ItemData[] dropItems;
-
-    [Header("ºñÁÖ¾ó")]
-    public GameObject prefab;
+    [Header("Prefab")]
+    public GameObject prefab;   // âœ… ìŠ¤í¬ë„ˆì—ì„œ ì“¸ í”„ë¦¬íŒ¹ ì—°ê²°
+    public string DropItems;
 }

@@ -23,4 +23,8 @@ MonoBehaviour:
   walkSpeed: 2
   exp: 40
   gold: 40
+  detectRange: 2
+  atkRange: 2
+  attackCooldown: 1
+  prefab: {fileID: 0}
   DropItems: 

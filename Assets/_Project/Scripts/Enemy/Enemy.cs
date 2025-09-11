@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         if (data != null)
-            currentHp = data.maxHp;  // SO에서 초기화
+            currentHp = data.hp;  // SO에서 초기화
     }
 
     public void TakeDamage(int dmg)
@@ -24,7 +24,7 @@ public class Enemy : MonoBehaviour
         int finalDamage = Mathf.Max(0, dmg - data.def);
         currentHp -= finalDamage;
 
-        Debug.Log($"{data.displayName} 피격! HP: {currentHp}/{data.maxHp}");
+        Debug.Log($"{data.displayName} 피격! HP: {currentHp}/{data.hp}");
 
         // 깜빡이 효과 실행
         if (rend != null)
@@ -56,12 +56,12 @@ public class Enemy : MonoBehaviour
     }
     private void DropLoot()
     {
-        if (data.dropItems == null || data.dropItems.Length == 0) return;
+        if (data.DropItems == null || data.DropItems.Length == 0) return;
 
-        foreach (var item in data.dropItems)
+        foreach (var item in data.DropItems)
         {
             if (item == null) continue;
-            Debug.Log($"드랍: {item.displayName} (코드: {item.rcode})");
+        
             // TODO: 인벤토리나 필드 드랍 연동
         }
     }

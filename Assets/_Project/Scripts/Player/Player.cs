@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     [SerializeField] private PlayerHUD hud;
     public PlayerHUD HUD => hud;
 
-    private int maxHP = 100;
+    private int hp = 100;
     private int currentHP;
 
     private Rigidbody rb;
@@ -81,15 +81,15 @@ public class Player : MonoBehaviour
     }
     private void Start()
     {
-        currentHP = maxHP;
+        currentHP = hp;
         if (hud != null)
-            hud.SetHP(currentHP, maxHP);
+            hud.SetHP(currentHP, hp);
     }
     public void TakeDamage(int dmg)
     {
         currentHP -= dmg;
         if (hud != null)
-            hud.SetHP(currentHP, maxHP);
+            hud.SetHP(currentHP, hp);
 
         if (currentHP <= 0) Die();
     }
