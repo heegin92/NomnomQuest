@@ -1,79 +1,82 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Collider))]
 public class Player : MonoBehaviour
 {
-    [Header("HUD ¿¬°á (¿¡µğÅÍ¿¡¼­ ÇÒ´ç)")]
+    [Header("ì´ë™ ì†ë„")]
+    [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private PlayerHUD hud;
     public PlayerHUD HUD => hud;
 
-    [Header("±âº» »óÅÂ°ª")]
-    [SerializeField] private int maxHP = 100;
-    [SerializeField] private int hp;
+    private Rigidbody rb;
+    private Vector3 targetPos;
+    private bool isMoving = false;
 
-    [Header("Move")]
-    [SerializeField] float moveSpeed = 6f;
-
-    [Header("Ground Check")]
-    [SerializeField] Transform groundCheck;      // ¹ß³¡ ºó ¿ÀºêÁ§Æ®
-    [SerializeField] float groundRadius = 0.15f; // ¹ß³¡ ¿ø ¹İÁö¸§
-    [SerializeField] LayerMask groundMask;       // Ground ·¹ÀÌ¾î ÁöÁ¤
-
-    Rigidbody2D rb;
-    float inputX;
-    bool isGrounded;
+    private Animator animator;
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        // ¾ÈÀü ¼Â¾÷(ÀÎ½ºÆåÅÍ¿¡¼­ ±ôºıÇßÀ» ¶§ ´ëºñ)
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-        rb.freezeRotation = true; // Z È¸Àü Àá±İ
-        hp = maxHP;
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+        animator = GetComponentInChildren<Animator>();
     }
 
-    private void Start()
-    {
-        // HUD°¡ ºñ¾îÀÖÀ¸¸é ¾À¿¡¼­ ÀÚµ¿À¸·Î ÇÑ ¹ø Ã£¾Æº¸±â (¼±ÅÃ)
-        if (hud == null)
-            hud = FindObjectOfType<PlayerHUD>();
-    }
     void Update()
     {
-        // ÁÂ¿ì ÀÔ·Â
-        inputX = Input.GetAxisRaw("Horizontal");
-        // ¹Ù´Ú Ã¼Å© (OverlapCircle)
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundMask);
+        // PC í´ë¦­
+        if (Input.GetMouseButtonDown(0))
+        {
+            SetTarget(Input.mousePosition);
+        }
 
-        // ÀÌµ¿
-        float targetVelX = inputX * moveSpeed;
-        rb.velocity = new Vector2(targetVelX, rb.velocity.y);
-    }
-    void OnDrawGizmosSelected()
-    {
-        if (groundCheck == null) return;
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
+        // ëª¨ë°”ì¼ í„°ì¹˜
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            SetTarget(Input.GetTouch(0).position);
+        }
     }
 
-    public void ResetForStage()
+    private void FixedUpdate()
     {
-        hp = maxHP;
-        if (rb) rb.velocity = Vector2.zero;
-        // ÇÊ¿äÇÏ¸é Ãß°¡ ÃÊ±âÈ­(¾Ö´Ï¸ŞÀÌ¼Ç/¹öÇÁ/ÀÔ·Â»óÅÂ µî) ¿©±â¿¡
+        if (isMoving)
+        {
+            Vector3 newPos = Vector3.MoveTowards(rb.position, targetPos, moveSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(newPos);
+
+            // ì´ë™ ë°©í–¥ (XZ í‰ë©´)
+            Vector3 dir = targetPos - rb.position;
+            dir.y = 0;
+
+            if (dir.sqrMagnitude > 0.01f)
+            {
+                // ì¢Œìš° ì´ë™ì— ë”°ë¼ í”Œë¦½ë§Œ ì ìš©
+                if (dir.x > 0.01f)       // ì˜¤ë¥¸ìª½ ì´ë™
+                    transform.localScale = new Vector3(1, 1, 1);
+                else if (dir.x < -0.01f) // ì™¼ìª½ ì´ë™
+                    transform.localScale = new Vector3(-1, 1, 1);
+            }
+
+            // ëª©í‘œ ë„ì°© ì²´í¬
+            if (Vector3.Distance(rb.position, targetPos) < 0.05f)
+            {
+                isMoving = false;
+                if (animator != null) animator.SetBool("IsMove", false);
+            }
+        }
     }
 
-    public void TakeDamage(int dmg)
+    private void SetTarget(Vector3 screenPos)
     {
-        hp -= dmg;
-        if (hp <= 0) Die();
-    }
+        Ray ray = Camera.main.ScreenPointToRay(screenPos);
 
-    private void Die()
-    {
-        Debug.Log("ÇÃ·¹ÀÌ¾î »ç¸Á");
-        // TODO: ¸®½ºÆù/°ÔÀÓ¿À¹ö Ã³¸®
+        // Ground ë ˆì´ì–´ë§Œ í´ë¦­/í„°ì¹˜ í—ˆìš©
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, LayerMask.GetMask("Ground")))
+        {
+            targetPos = new Vector3(hit.point.x, 0f, hit.point.z); // y=0 ê³ ì •
+            isMoving = true;
+            if (animator != null) animator.SetBool("IsMove", true);
+        }
     }
 }
