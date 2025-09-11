@@ -2,30 +2,34 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-    public MonsterSpawner monsterSpawner;
+    public EnemySpawner EnemySpawner;
     public PlayerData playerData;
 
     public void StartBattle()
     {
-        InvokeRepeating(nameof(SpawnMonster), 1f, 3f); // 3초마다 몬스터 등장
+        InvokeRepeating(nameof(SpawnEnemy), 1f, 3f); // 3초마다 몬스터 등장
     }
 
-    private void SpawnMonster()
+    private void SpawnEnemy()
     {
-        Monster monster = monsterSpawner.Spawn();
-        ResolveBattle(monster);
+        Enemy enemy = EnemySpawner.Spawn();
+        ResolveBattle(enemy);
     }
 
-    private void ResolveBattle(Monster monster)
+    private void ResolveBattle(Enemy enemy)
     {
-        monster.TakeDamage(playerData.attack);
+        enemy.TakeDamage(playerData.attack);
 
-        if (monster.IsDead())
+        if (enemy.IsDead())
         {
-            playerData.AddExp(monster.expReward);
-            playerData.gold += monster.goldReward;
+            playerData.AddExp(enemy.data.exp);
+            playerData.gold += enemy.data.gold;
 
-            Debug.Log($"몬스터 처치! EXP +{monster.expReward}, Gold +{monster.goldReward}");
+            Debug.Log($"몬스터 처치! EXP +{enemy.data.exp}, Gold +{enemy.data.gold}");
+
+            enemy.Die();
         }
     }
+
+
 }

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4285794812268849742}
   - component: {fileID: 1933055691477686712}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 5004685804743116168}
   - component: {fileID: 3585338482406779549}
   - component: {fileID: 6967060465565562606}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Mon_002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,11 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd292df8190bf348a535b4dbb41dad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  monsterName: 
-  health: 0
-  attack: 0
-  expReward: 0
-  goldReward: 0
+  data: {fileID: 11400000, guid: 47723dd73a087844ca8a00568ecc64fb, type: 2}
 --- !u!95 &6967060465565562606
 Animator:
   serializedVersion: 5

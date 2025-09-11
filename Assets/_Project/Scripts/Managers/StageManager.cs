@@ -4,7 +4,7 @@ using UnityEngine;
 public class Stage
 {
     public string stageName;
-    public Monster[] stageMonsters;
+    public Enemy[] stageEnemys;
     public int requiredLevel;
 }
 

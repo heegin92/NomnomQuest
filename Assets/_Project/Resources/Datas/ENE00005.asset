@@ -21,5 +21,6 @@ MonoBehaviour:
   def: 3
   atk: 10
   walkSpeed: 3
-  runSpeed: 4
+  exp: 15
+  gold: 20
   DropItems: DRO00001|DRO00004

@@ -17,9 +17,10 @@ MonoBehaviour:
   desc: 
   displayName: "\uC2DD\uBE75\uB0E5"
   description: 
-  hp: 0
-  def: 0
-  atk: 0
-  walkSpeed: 0
-  runSpeed: 0
+  hp: 100
+  def: 5
+  atk: 40
+  walkSpeed: 2
+  exp: 40
+  gold: 40
   DropItems: 
