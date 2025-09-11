@@ -1,19 +1,22 @@
-﻿using Ironcow.Synapse.Sample.Common;
+﻿using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class Player : MonoBehaviour
 {
-    [Header("이동 속도")]
+    [Header("이동 설정")]
     [SerializeField] private float moveSpeed = 5f;
+
+    [Header("공격 설정")]
+    [SerializeField] private float attackRange = 2f;      // 공격 범위
+    [SerializeField] private float attackCooldown = 1f;   // 쿨타임
+    [SerializeField] private int attackDamage = 10;       // 공격력
     [SerializeField] private PlayerHUD hud;
     public PlayerHUD HUD => hud;
 
-    [Header("공격 설정")]
-    [SerializeField] private float attackRange = 2f;      // 공격 범위 반경
-    [SerializeField] private float attackCooldown = 1f;   // 공격 쿨타임
-    [SerializeField] private int attackDamage = 10;       // 공격 데미지
+    private int maxHP = 100;
+    private int currentHP;
 
     private Rigidbody rb;
     private Vector3 targetPos;
@@ -28,15 +31,17 @@ public class Player : MonoBehaviour
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         animator = GetComponentInChildren<Animator>();
+
+        targetPos = transform.position; // 초기값
     }
 
     void Update()
     {
-        // PC 클릭
+        // PC 클릭 이동
         if (Input.GetMouseButtonDown(0))
             SetTarget(Input.mousePosition);
 
-        // 모바일 터치
+        // 모바일 터치 이동
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             SetTarget(Input.GetTouch(0).position);
 
@@ -46,7 +51,7 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // 공격 중일 땐 이동 애니 차단
+        // 공격 중일 땐 이동 차단
         if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
             return;
 
@@ -60,6 +65,7 @@ public class Player : MonoBehaviour
 
             if (dir.sqrMagnitude > 0.01f)
             {
+                // 좌우 플립만
                 if (dir.x > 0.01f)
                     transform.localScale = new Vector3(1, 1, 1);
                 else if (dir.x < -0.01f)
@@ -72,6 +78,26 @@ public class Player : MonoBehaviour
                 if (animator != null) animator.SetBool("IsMove", false);
             }
         }
+    }
+    private void Start()
+    {
+        currentHP = maxHP;
+        if (hud != null)
+            hud.SetHP(currentHP, maxHP);
+    }
+    public void TakeDamage(int dmg)
+    {
+        currentHP -= dmg;
+        if (hud != null)
+            hud.SetHP(currentHP, maxHP);
+
+        if (currentHP <= 0) Die();
+    }
+
+    private void Die()
+    {
+        Debug.Log("플레이어 사망!");
+        // TODO: 게임 오버 처리, 리스폰 처리 등 넣을 수 있음
     }
 
     private void SetTarget(Vector3 screenPos)
@@ -88,36 +114,93 @@ public class Player : MonoBehaviour
 
     private void TryAutoAttack()
     {
+        // 쿨타임 확인
         if (Time.time < lastAttackTime + attackCooldown)
+        {
+            Debug.Log("쿨타임 때문에 공격 불가");
             return;
+        }
+
+        // Enemy 레이어 탐지
+        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
+        Debug.Log($"적 탐지 개수: {hits.Length}");
+
+        if (hits.Length > 0)
+        {
+            // 가까운 적 찾기
+            Collider closest = null;
+            float minDist = float.MaxValue;
+            foreach (var h in hits)
+            {
+                float dist = Vector3.Distance(transform.position, h.transform.position);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    closest = h;
+                }
+            }
+
+            if (closest != null)
+            {
+                Debug.Log($"공격 대상: {closest.name}");
+
+                // 좌우 방향만 맞추기
+                Vector3 dir = closest.transform.position - transform.position;
+                if (dir.x > 0.01f)
+                    transform.localScale = new Vector3(1, 1, 1);
+                else if (dir.x < -0.01f)
+                    transform.localScale = new Vector3(-1, 1, 1);
+
+                // 애니메이션 트리거 발동
+                if (animator != null)
+                    animator.SetTrigger("IsAttack");
+
+                Debug.Log("공격 시작!");
+                // ⚠️ 쿨타임은 여기서 안 갱신 → OnAttackHit에서 처리
+            }
+        }
+    }
+
+    /// <summary>
+    /// Attack 애니메이션의 타격 프레임에서 호출되는 Animation Event
+    /// </summary>
+    public void OnAttackHit()
+    {
+        Debug.Log("OnAttackHit 실행됨!");
 
         Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
 
         if (hits.Length > 0)
         {
-            if (animator != null)
-                animator.SetTrigger("IsAttack");
-
-            lastAttackTime = Time.time;
-        }
-    }
-
-    /// <summary>
-    /// 공격 애니메이션 중 Animation Event로 호출
-    /// </summary>
-    public void OnAttackHit()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
-
-        foreach (var hit in hits)
-        {
-            Enemy enemy = hit.GetComponent<Enemy>();
-            if (enemy != null)
+            // 가장 가까운 적 1명만 찾기
+            Collider closest = null;
+            float minDist = float.MaxValue;
+            foreach (var h in hits)
             {
-                enemy.TakeDamage(attackDamage);
+                float dist = Vector3.Distance(transform.position, h.transform.position);
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    closest = h;
+                }
+            }
+
+            if (closest != null)
+            {
+                Enemy enemy = closest.GetComponent<Enemy>();
+                if (enemy != null)
+                {
+                    enemy.TakeDamage(attackDamage);
+                    Debug.Log($"적 {enemy.data.displayName} 에게 {attackDamage} 데미지!");
+                }
             }
         }
+
+        // ✅ 공격 판정 들어간 순간 쿨타임 갱신
+        lastAttackTime = Time.time;
     }
+
+
 
     private void OnDrawGizmosSelected()
     {

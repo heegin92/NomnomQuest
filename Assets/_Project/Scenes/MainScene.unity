@@ -513,6 +513,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -561,7 +562,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 100
-  field of view: 62
+  field of view: 55
   orthographic: 0
   orthographic size: 8
   m_Depth: 0
@@ -594,6 +595,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 14.594, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19b5d845150b1c4e9e2dd99c8b4b856, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 1416702696}
 --- !u!1 &525264201
 GameObject:
   m_ObjectHideFlags: 0
@@ -738,10 +752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67c927c30e4c8df4fbb44f3282b01f3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  monsters:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  enemyTable: []
 --- !u!4 &770882402
 Transform:
   m_ObjectHideFlags: 0
@@ -972,6 +983,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7dcaea5d99bcbf7498c7341ab3ba793d, type: 3}
+--- !u!4 &1416702696 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2206912854898287254, guid: 7dcaea5d99bcbf7498c7341ab3ba793d, type: 3}
+  m_PrefabInstance: {fileID: 1407971991}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1594183388
 GameObject:
   m_ObjectHideFlags: 0
@@ -1135,7 +1151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d104905beb737c41bfad3b0b672eec3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  monsterSpawner: {fileID: 770882401}
+  EnemySpawner: {fileID: 0}
   playerData:
     level: 1
     exp: 0

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -7,6 +8,10 @@ public class Enemy : MonoBehaviour
 
     [Header("런타임 상태")]
     private int currentHp;
+
+    private Renderer rend;           // 적의 Renderer
+    private Color originalColor;     // 원래 색상 저장
+
 
     private void Awake()
     {
@@ -20,6 +25,13 @@ public class Enemy : MonoBehaviour
         currentHp -= finalDamage;
 
         Debug.Log($"{data.displayName} 피격! HP: {currentHp}/{data.maxHp}");
+
+        // 깜빡이 효과 실행
+        if (rend != null)
+            StartCoroutine(HitFlash());
+
+        if (IsDead())
+            Die();
     }
 
     public bool IsDead() => currentHp <= 0;
@@ -31,7 +43,17 @@ public class Enemy : MonoBehaviour
         DropLoot();
         Destroy(gameObject);
     }
+    private IEnumerator HitFlash()
+    {
+        // 빨간색으로 변경
+        rend.material.color = Color.red;
 
+        // 0.1초 정도 유지
+        yield return new WaitForSeconds(0.1f);
+
+        // 원래 색상 복원
+        rend.material.color = originalColor;
+    }
     private void DropLoot()
     {
         if (data.dropItems == null || data.dropItems.Length == 0) return;

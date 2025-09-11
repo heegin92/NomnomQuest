@@ -2,25 +2,27 @@ using UnityEngine;
 
 public class PlayerCamera : MonoBehaviour
 {
-    [SerializeField] private Transform target; // 캐릭터
-    [SerializeField] private Transform pivot;  // 카메라 중심 피봇
-    [SerializeField] private Vector3 offset = new Vector3(0, 10f, -10f);
-    [SerializeField] private float smoothSpeed = 5f;
+    [SerializeField] private Transform target; // 따라갈 대상(플레이어)
+    private Vector3 offset; // 초기 거리 저장
 
-    void LateUpdate()
+    private void Start()
     {
-        if (target == null || pivot == null) return;
+        if (target == null)
+        {
+            Debug.LogError("[PlayerCamera] 타겟이 비어있습니다!");
+            return;
+        }
 
-        // Pivot은 항상 캐릭터 위치
-        pivot.position = target.position;
-
-        // 카메라 목표 위치 = pivot 위치 + offset
-        Vector3 desiredPos = pivot.position + offset;
-
-        // 부드럽게 이동
-        transform.position = Vector3.Lerp(transform.position, desiredPos, smoothSpeed * Time.deltaTime);
-
-        // pivot 바라보기
-        transform.LookAt(pivot);
+        // 처음 카메라와 플레이어 사이의 거리 저장
+        offset = transform.position - target.position;
     }
+
+    private void LateUpdate()
+    {
+        if (target == null) return;
+
+        Vector3 desiredPos = target.position + offset;
+        transform.position = Vector3.Lerp(transform.position, desiredPos, Time.deltaTime * 5f); // 5는 따라오는 속도
+    }
+
 }

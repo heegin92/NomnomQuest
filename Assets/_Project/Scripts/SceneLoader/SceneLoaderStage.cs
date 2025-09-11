@@ -106,12 +106,11 @@ public class SceneLoaderStage : MonoBehaviour
 
     private void Start()
     {
-
-        // === HUD에 스테이지 번호 표시 ===
         if (GameManager.Instance != null && GameManager.Instance.Player != null && GameManager.Instance.Player.HUD != null)
         {
             GameManager.Instance.Player.HUD.SetStageText(stageNum);
         }
+
     }
 
     /// <summary>
