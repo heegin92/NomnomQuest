@@ -153,7 +153,7 @@ public class Player : MonoBehaviour
 
     private IEnumerator FadeOutAndDestroy()
     {
-        float duration = 2f; // 2초 동안
+        float duration = 1f;
         float elapsed = 0f;
 
         while (elapsed < duration)
