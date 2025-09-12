@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float attackRange = 2f;      // 공격 범위
     [SerializeField] private float attackCooldown = 1f;   // 쿨타임
     [SerializeField] private int attackDamage = 10;       // 공격력
+    [SerializeField] private float wanderRadius = 5f;   // 배회 범위
+    [SerializeField] private float wanderInterval = 3f; // 몇 초마다 새 목표 잡을지
     [SerializeField] private PlayerHUD hud;
     public PlayerHUD HUD => hud;
 
@@ -23,6 +25,8 @@ public class Player : MonoBehaviour
     private Rigidbody rb;
     private Vector3 targetPos;
     private bool isMoving = false;
+    private float lastWanderTime = 0f;
+
 
     private Animator animator;
     private float lastAttackTime = -999f;
@@ -200,16 +204,14 @@ public class Player : MonoBehaviour
     {
         // 쿨타임 확인
         if (Time.time < lastAttackTime + attackCooldown)
-        {
             return;
-        }
 
-        // Enemy 레이어 탐지
-        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
+        // Enemy 탐지
+        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange * 3f, LayerMask.GetMask("Enemy"));
 
         if (hits.Length > 0)
         {
-            // 가까운 적 찾기
+            // 기존 적 추적 로직 그대로
             Collider closest = null;
             float minDist = float.MaxValue;
             foreach (var h in hits)
@@ -224,22 +226,57 @@ public class Player : MonoBehaviour
 
             if (closest != null)
             {
+                float distToEnemy = Vector3.Distance(transform.position, closest.transform.position);
 
-                // 좌우 방향만 맞추기
-                Vector3 dir = closest.transform.position - transform.position;
-                if (dir.x > 0.01f)
-                    transform.localScale = new Vector3(1, 1, 1);
-                else if (dir.x < -0.01f)
-                    transform.localScale = new Vector3(-1, 1, 1);
+                if (distToEnemy > attackRange)
+                {
+                    // 👉 사거리 밖 → 적에게 이동
+                    targetPos = new Vector3(closest.transform.position.x, 0f, closest.transform.position.z);
+                    isMoving = true;
+                    if (animator != null) animator.SetBool("IsMove", true);
+                }
+                else
+                {
+                    // 👉 사거리 안 → 공격
+                    isMoving = false;
+                    if (animator != null) animator.SetBool("IsMove", false);
 
-                // 애니메이션 트리거 발동
-                if (animator != null)
-                    animator.SetTrigger("IsAttack");
+                    Vector3 dir = closest.transform.position - transform.position;
+                    if (dir.x > 0.01f) transform.localScale = new Vector3(1, 1, 1);
+                    else if (dir.x < -0.01f) transform.localScale = new Vector3(-1, 1, 1);
 
-                // ⚠️ 쿨타임은 여기서 안 갱신 → OnAttackHit에서 처리
+                    if (animator != null)
+                        animator.SetTrigger("IsAttack");
+                }
+            }
+        }
+        else
+        {
+            // 👉 적이 하나도 없을 때 → 랜덤 배회
+            if (Time.time > lastWanderTime + wanderInterval && !isMoving)
+            {
+                lastWanderTime = Time.time;
+
+                // 랜덤 위치 생성
+                Vector3 randomOffset = new Vector3(
+                    UnityEngine.Random.Range(-wanderRadius, wanderRadius),
+                    0f,
+                    UnityEngine.Random.Range(-wanderRadius, wanderRadius)
+                );
+
+                Vector3 randomPos = transform.position + randomOffset;
+
+                // 실제 Ground 위 좌표로 보정
+                if (Physics.Raycast(randomPos + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, LayerMask.GetMask("Ground")))
+                {
+                    targetPos = new Vector3(hit.point.x, 0f, hit.point.z);
+                    isMoving = true;
+                    if (animator != null) animator.SetBool("IsMove", true);
+                }
             }
         }
     }
+
 
     public void OnAttackHit()
     {
