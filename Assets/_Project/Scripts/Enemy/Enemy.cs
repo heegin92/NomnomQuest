@@ -1,22 +1,140 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Collider))]
 public class Enemy : MonoBehaviour
 {
-    [Header("µ¥ÀÌÅÍ ÂüÁ¶")]
-    public EnemyData data;   // SO ÂüÁ¶
+    [Header("ë°ì´í„° ì°¸ì¡°")]
+    public EnemyData data;   // ScriptableObject ì°¸ì¡°
 
-    [Header("·±Å¸ÀÓ »óÅÂ")]
+    [Header("ëŸ°íƒ€ì„ ìƒíƒœ")]
     private int currentHp;
 
-    private Renderer rend;           // ÀûÀÇ Renderer
-    private Color originalColor;     // ¿ø·¡ »ö»ó ÀúÀå
+    private Rigidbody rb;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
 
+    private Transform player;
+    private float lastAttackTime = -999f;
+
+    // ì´ë™ ë°©í–¥
+    private Vector3 moveDir = Vector3.zero;
 
     private void Awake()
     {
         if (data != null)
-            currentHp = data.hp;  // SO¿¡¼­ ÃÊ±âÈ­
+            currentHp = data.hp;
+
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        animator = GetComponentInChildren<Animator>();
+
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer != null)
+            originalColor = spriteRenderer.color;
+    }
+
+    private void Start()
+    {
+        // GameManagerì—ì„œ í”Œë ˆì´ì–´ ì°¾ê¸°
+        if (GameManager.Instance != null && GameManager.Instance.Player != null)
+        {
+            player = GameManager.Instance.Player.transform;
+        }
+
+        // ë³´ì •: íƒœê·¸ ê¸°ë°˜ íƒìƒ‰
+        if (player == null)
+        {
+            var pObj = GameObject.FindWithTag("Player");
+            if (pObj != null) player = pObj.transform;
+        }
+    }
+
+    private void Update()
+    {
+        if (player == null) return;
+
+        // y ë¬´ì‹œí•œ í‰ë©´ ê±°ë¦¬ ê³„ì‚°
+        Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
+        Vector3 playerPos = new Vector3(player.position.x, 0, player.position.z);
+        float dist = Vector3.Distance(enemyPos, playerPos);
+
+        if (dist <= data.atkRange)
+        {
+            // ê³µê²© ë²”ìœ„ â†’ ì´ë™ ë©ˆì¶”ê³  ê³µê²©
+            moveDir = Vector3.zero;
+            LookAtPlayer();   // âœ… ê³µê²© ë²”ìœ„ ì•ˆì—ì„œëŠ” í”Œë ˆì´ì–´ ë°”ë¼ë³´ê¸°
+            TryAttack();
+        }
+        else if (dist <= data.detectRange)
+        {
+            // íƒì§€ ë²”ìœ„ â†’ ì¶”ì 
+            moveDir = (playerPos - enemyPos).normalized;
+            LookAtPlayer();   // âœ… íƒì§€ ë²”ìœ„ ì•ˆì—ì„œë„ í”Œë ˆì´ì–´ ë°”ë¼ë³´ê¸°
+        }
+        else
+        {
+            // ë²”ìœ„ ë°– â†’ Idle
+            moveDir = Vector3.zero;
+            if (animator != null) animator.SetBool("IsMove", false);
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (moveDir != Vector3.zero)
+        {
+            rb.MovePosition(transform.position + moveDir * data.walkSpeed * Time.fixedDeltaTime);
+
+            if (animator != null) animator.SetBool("IsMove", true);
+        }
+    }
+
+    private void LookAtPlayer()
+    {
+        if (player == null) return;
+
+        Vector3 dir = player.position - transform.position;
+        if (dir.x > 0.01f)
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z); // ì˜¤ë¥¸ìª½ ë³¼ ë•Œ ë°˜ì „
+        else if (dir.x < -0.01f)
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);  // ì™¼ìª½ ë³¼ ë•Œ ê·¸ëŒ€ë¡œ
+    }
+
+    private void TryAttack()
+    {
+        if (Time.time < lastAttackTime + data.attackCooldown)
+        {
+            Debug.Log("ì¿¨íƒ€ì„ ë•Œë¬¸ì— ê³µê²© ë¶ˆê°€");
+            return;
+        }
+
+        Debug.Log("ê³µê²© ì‹œë„ â†’ ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰");
+        if (animator != null)
+            animator.SetTrigger("IsAttack");
+
+        lastAttackTime = Time.time;
+    }
+
+    // ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ì—ì„œ í˜¸ì¶œë¨
+    public void OnAttackHit()
+    {
+        if (player == null) return;
+
+        float dist = Vector3.Distance(transform.position, player.position);
+        if (dist <= data.atkRange + 0.5f)
+        {
+            Player p = player.GetComponent<Player>();
+            if (p != null)
+            {
+                Debug.Log($"{data.displayName}ì´(ê°€) í”Œë ˆì´ì–´ ê³µê²©! ë°ë¯¸ì§€ {data.atk}");
+                p.TakeDamage(data.atk);
+            }
+        }
     }
 
     public void TakeDamage(int dmg)
@@ -24,10 +142,9 @@ public class Enemy : MonoBehaviour
         int finalDamage = Mathf.Max(0, dmg - data.def);
         currentHp -= finalDamage;
 
-        Debug.Log($"{data.displayName} ÇÇ°İ! HP: {currentHp}/{data.hp}");
+        Debug.Log($"{data.displayName} í”¼ê²©! HP: {currentHp}/{data.hp}");
 
-        // ±ôºıÀÌ È¿°ú ½ÇÇà
-        if (rend != null)
+        if (spriteRenderer != null)
             StartCoroutine(HitFlash());
 
         if (IsDead())
@@ -38,22 +155,22 @@ public class Enemy : MonoBehaviour
 
     public void Die()
     {
-        Debug.Log($"{data.displayName} »ç¸Á! EXP {data.exp}, Gold {data.gold}");
+        Debug.Log($"{data.displayName} ì‚¬ë§! EXP {data.exp}, Gold {data.gold}");
 
         DropLoot();
         Destroy(gameObject);
     }
+
     private IEnumerator HitFlash()
     {
-        // »¡°£»öÀ¸·Î º¯°æ
-        rend.material.color = Color.red;
-
-        // 0.1ÃÊ Á¤µµ À¯Áö
-        yield return new WaitForSeconds(0.1f);
-
-        // ¿ø·¡ »ö»ó º¹¿ø
-        rend.material.color = originalColor;
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.red;
+            yield return new WaitForSeconds(0.1f);
+            spriteRenderer.color = originalColor;
+        }
     }
+
     private void DropLoot()
     {
         if (data.DropItems == null || data.DropItems.Length == 0) return;
@@ -61,8 +178,15 @@ public class Enemy : MonoBehaviour
         foreach (var item in data.DropItems)
         {
             if (item == null) continue;
-        
-            // TODO: ÀÎº¥Åä¸®³ª ÇÊµå µå¶ø ¿¬µ¿
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, data != null ? data.detectRange : 5f);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, data != null ? data.atkRange : 2f);
     }
 }

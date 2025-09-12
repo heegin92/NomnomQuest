@@ -23,8 +23,8 @@ MonoBehaviour:
   walkSpeed: 2
   exp: 15
   gold: 20
-  detectRange: 3
-  atkRange: 1
+  detectRange: 10
+  atkRange: 5
   attackCooldown: 1
   prefab: {fileID: 9013237028364413841, guid: 2da1c7e7399f2614083317900ee60518, type: 3}
   DropItems: DRO00002|DRO00019

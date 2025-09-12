@@ -857,6 +857,7 @@ GameObject:
   - component: {fileID: 1930972208994900074}
   - component: {fileID: 3106233151141584681}
   - component: {fileID: 335646536812859509}
+  - component: {fileID: 6385757650627190289}
   m_Layer: 6
   m_Name: Ava_01
   m_TagString: Player
@@ -894,7 +895,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 8
-  attackRange: 2
+  attackRange: 3
   attackCooldown: 1
   attackDamage: 3
   hud: {fileID: 0}
@@ -948,6 +949,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &6385757650627190289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5352673630492711781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae535424a293224fbc4364a263d02c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5676837649412555466
 GameObject:
   m_ObjectHideFlags: 0

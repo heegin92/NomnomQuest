@@ -117,13 +117,11 @@ public class Player : MonoBehaviour
         // 쿨타임 확인
         if (Time.time < lastAttackTime + attackCooldown)
         {
-            Debug.Log("쿨타임 때문에 공격 불가");
             return;
         }
 
         // Enemy 레이어 탐지
         Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
-        Debug.Log($"적 탐지 개수: {hits.Length}");
 
         if (hits.Length > 0)
         {
@@ -142,7 +140,6 @@ public class Player : MonoBehaviour
 
             if (closest != null)
             {
-                Debug.Log($"공격 대상: {closest.name}");
 
                 // 좌우 방향만 맞추기
                 Vector3 dir = closest.transform.position - transform.position;
@@ -155,18 +152,13 @@ public class Player : MonoBehaviour
                 if (animator != null)
                     animator.SetTrigger("IsAttack");
 
-                Debug.Log("공격 시작!");
                 // ⚠️ 쿨타임은 여기서 안 갱신 → OnAttackHit에서 처리
             }
         }
     }
 
-    /// <summary>
-    /// Attack 애니메이션의 타격 프레임에서 호출되는 Animation Event
-    /// </summary>
     public void OnAttackHit()
     {
-        Debug.Log("OnAttackHit 실행됨!");
 
         Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
 
