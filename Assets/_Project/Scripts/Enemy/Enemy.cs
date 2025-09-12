@@ -13,14 +13,25 @@ public class Enemy : MonoBehaviour
 
     private Rigidbody rb;
     private Animator animator;
-    private SpriteRenderer spriteRenderer;
-    private Color originalColor;
 
     private Transform player;
     private float lastAttackTime = -999f;
 
     // 이동 방향
     private Vector3 moveDir = Vector3.zero;
+
+    // ✅ 캐싱용
+    private Renderer[] renderers;
+    private Color[] originalColors;
+
+    [Header("배회 설정")]
+    [SerializeField] private float wanderRadius = 5f;
+    [SerializeField] private float wanderInterval = 3f;
+    private float lastWanderTime = 0f;
+    private Vector3 wanderTarget;
+    private bool isWandering = false;
+
+    private Collider groundCollider;
 
     private void Awake()
     {
@@ -33,9 +44,16 @@ public class Enemy : MonoBehaviour
 
         animator = GetComponentInChildren<Animator>();
 
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        if (spriteRenderer != null)
-            originalColor = spriteRenderer.color;
+        // ✅ Renderer & 원래 색상 캐싱
+        renderers = GetComponentsInChildren<Renderer>();
+        originalColors = new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i].material.HasProperty("_Color"))
+                originalColors[i] = renderers[i].material.color;
+            else
+                originalColors[i] = Color.white;
+        }
     }
 
     private void Start()
@@ -52,35 +70,46 @@ public class Enemy : MonoBehaviour
             var pObj = GameObject.FindWithTag("Player");
             if (pObj != null) player = pObj.transform;
         }
+
+        // Ground Collider 찾기
+        GameObject groundObj = GameObject.FindWithTag("Ground");
+        if (groundObj != null)
+            groundCollider = groundObj.GetComponent<Collider>();
     }
 
     private void Update()
     {
-        if (player == null) return;
-
-        // y 무시한 평면 거리 계산
-        Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
-        Vector3 playerPos = new Vector3(player.position.x, 0, player.position.z);
-        float dist = Vector3.Distance(enemyPos, playerPos);
-
-        if (dist <= data.atkRange)
+        if (player != null)
         {
-            // 공격 범위 → 이동 멈추고 공격
-            moveDir = Vector3.zero;
-            LookAtPlayer();   // ✅ 공격 범위 안에서는 플레이어 바라보기
-            TryAttack();
-        }
-        else if (dist <= data.detectRange)
-        {
-            // 탐지 범위 → 추적
-            moveDir = (playerPos - enemyPos).normalized;
-            LookAtPlayer();   // ✅ 탐지 범위 안에서도 플레이어 바라보기
+            // y 무시한 평면 거리 계산
+            Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
+            Vector3 playerPos = new Vector3(player.position.x, 0, player.position.z);
+            float dist = Vector3.Distance(enemyPos, playerPos);
+
+            if (dist <= data.atkRange)
+            {
+                // 공격 범위 → 이동 멈추고 공격
+                moveDir = Vector3.zero;
+                LookAtPlayer();
+                TryAttack();
+            }
+            else if (dist <= data.detectRange)
+            {
+                // 탐지 범위 → 추적
+                moveDir = (playerPos - enemyPos).normalized;
+                LookAtPlayer();
+                if (animator != null) animator.SetBool("IsMove", true);
+            }
+            else
+            {
+                // 플레이어가 탐지 범위 밖 → 배회
+                Wander();
+            }
         }
         else
         {
-            // 범위 밖 → Idle
-            moveDir = Vector3.zero;
-            if (animator != null) animator.SetBool("IsMove", false);
+            // 플레이어 자체가 없을 때 → 배회
+            Wander();
         }
     }
 
@@ -88,9 +117,45 @@ public class Enemy : MonoBehaviour
     {
         if (moveDir != Vector3.zero)
         {
-            rb.MovePosition(transform.position + moveDir * data.walkSpeed * Time.fixedDeltaTime);
+            Vector3 newPos = transform.position + moveDir * data.walkSpeed * Time.fixedDeltaTime;
+
+            // 바닥 보정
+            newPos.y = 0f;
+            rb.MovePosition(newPos);
 
             if (animator != null) animator.SetBool("IsMove", true);
+        }
+    }
+
+    private void Wander()
+    {
+        if (groundCollider == null) return;
+
+        if (Time.time > lastWanderTime + wanderInterval && !isWandering)
+        {
+            lastWanderTime = Time.time;
+
+            Bounds b = groundCollider.bounds;
+            float randX = Random.Range(b.min.x, b.max.x);
+            float randZ = Random.Range(b.min.z, b.max.z);
+
+            wanderTarget = new Vector3(randX, 0f, randZ);
+
+            isWandering = true;
+        }
+
+        if (isWandering)
+        {
+            Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
+            moveDir = (wanderTarget - enemyPos).normalized;
+
+            // 목표 지점에 거의 도착하면 배회 종료
+            if (Vector3.Distance(enemyPos, wanderTarget) < 0.5f)
+            {
+                moveDir = Vector3.zero;
+                isWandering = false;
+                if (animator != null) animator.SetBool("IsMove", false);
+            }
         }
     }
 
@@ -100,20 +165,16 @@ public class Enemy : MonoBehaviour
 
         Vector3 dir = player.position - transform.position;
         if (dir.x > 0.01f)
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z); // 오른쪽 볼 때 반전
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         else if (dir.x < -0.01f)
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);  // 왼쪽 볼 때 그대로
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
     }
 
     private void TryAttack()
     {
         if (Time.time < lastAttackTime + data.attackCooldown)
-        {
-            Debug.Log("쿨타임 때문에 공격 불가");
             return;
-        }
 
-        Debug.Log("공격 시도 → 애니메이션 실행");
         if (animator != null)
             animator.SetTrigger("IsAttack");
 
@@ -131,8 +192,8 @@ public class Enemy : MonoBehaviour
             Player p = player.GetComponent<Player>();
             if (p != null)
             {
-                Debug.Log($"{data.displayName}이(가) 플레이어 공격! 데미지 {data.atk}");
                 p.TakeDamage(data.atk);
+                Debug.Log($"{data.displayName}이(가) 플레이어 공격! 데미지 {data.atk}");
             }
         }
     }
@@ -144,8 +205,7 @@ public class Enemy : MonoBehaviour
 
         Debug.Log($"{data.displayName} 피격! HP: {currentHp}/{data.hp}");
 
-        if (spriteRenderer != null)
-            StartCoroutine(HitFlash());
+        StartCoroutine(HitFlash());
 
         if (IsDead())
             Die();
@@ -157,17 +217,58 @@ public class Enemy : MonoBehaviour
     {
         Debug.Log($"{data.displayName} 사망! EXP {data.exp}, Gold {data.gold}");
 
+        moveDir = Vector3.zero;
+
+        if (animator != null)
+            animator.SetBool("IsMove", false);
+
         DropLoot();
+
+        StartCoroutine(FadeOutAndDestroy());
+    }
+
+    private IEnumerator FadeOutAndDestroy()
+    {
+        float duration = 1f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].material.HasProperty("_Color"))
+                {
+                    Color c = originalColors[i];
+                    c.a = alpha;
+                    renderers[i].material.color = c;
+                }
+            }
+
+            yield return null;
+        }
+
         Destroy(gameObject);
     }
 
     private IEnumerator HitFlash()
     {
-        if (spriteRenderer != null)
+        // 빨강으로 변경
+        for (int i = 0; i < renderers.Length; i++)
         {
-            spriteRenderer.color = Color.red;
-            yield return new WaitForSeconds(0.1f);
-            spriteRenderer.color = originalColor;
+            if (renderers[i].material.HasProperty("_Color"))
+                renderers[i].material.color = Color.red;
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        // 원래 색으로 복구
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i].material.HasProperty("_Color"))
+                renderers[i].material.color = originalColors[i];
         }
     }
 
@@ -178,6 +279,7 @@ public class Enemy : MonoBehaviour
         foreach (var item in data.DropItems)
         {
             if (item == null) continue;
+            // TODO: 아이템 드랍 처리
         }
     }
 

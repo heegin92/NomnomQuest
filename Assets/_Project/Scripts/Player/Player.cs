@@ -14,8 +14,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float attackRange = 2f;      // 공격 범위
     [SerializeField] private float attackCooldown = 1f;   // 쿨타임
     [SerializeField] private int attackDamage = 10;       // 공격력
-    [SerializeField] private float wanderRadius = 5f;   // 배회 범위
-    [SerializeField] private float wanderInterval = 3f; // 몇 초마다 새 목표 잡을지
+    [SerializeField] private float wanderRadius = 5f;     // 배회 범위
+    [SerializeField] private float wanderInterval = 3f;   // 몇 초마다 새 목표 잡을지
     [SerializeField] private PlayerHUD hud;
     public PlayerHUD HUD => hud;
 
@@ -27,9 +27,12 @@ public class Player : MonoBehaviour
     private bool isMoving = false;
     private float lastWanderTime = 0f;
 
-
     private Animator animator;
     private float lastAttackTime = -999f;
+
+    // ✅ 캐싱용
+    private Renderer[] renderers;
+    private Color[] originalColors;
 
     private void Awake()
     {
@@ -39,6 +42,17 @@ public class Player : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
 
         targetPos = transform.position; // 초기값
+
+        // ✅ Renderer & 원래 색상 캐싱
+        renderers = GetComponentsInChildren<Renderer>();
+        originalColors = new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i].material.HasProperty("_Color"))
+                originalColors[i] = renderers[i].material.color;
+            else
+                originalColors[i] = Color.white;
+        }
     }
 
     void Update()
@@ -85,12 +99,14 @@ public class Player : MonoBehaviour
             }
         }
     }
+
     private void Start()
     {
         currentHP = hp;
         if (hud != null)
             hud.SetHP(currentHP, hp);
     }
+
     public void TakeDamage(int dmg)
     {
         currentHP -= dmg;
@@ -103,39 +119,24 @@ public class Player : MonoBehaviour
         if (currentHP <= 0) Die();
     }
 
+    // ✅ HitEffect 캐싱 버전
     private IEnumerator HitEffect()
     {
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        List<Color> originalColors = new List<Color>();
-
-        // 원래 색상 저장
-        foreach (var r in renderers)
-        {
-            if (r.material.HasProperty("_Color"))
-                originalColors.Add(r.material.color);
-            else
-                originalColors.Add(Color.white);
-        }
-
         // 빨강으로 변경
         for (int i = 0; i < renderers.Length; i++)
         {
             if (renderers[i].material.HasProperty("_Color"))
-            {
                 renderers[i].material.color = Color.red;
-            }
         }
 
-        // 0.1초 정도 유지
+        // 0.1초 유지
         yield return new WaitForSeconds(0.1f);
 
-        // 원래 색으로 복귀
+        // 원래 색으로 복구
         for (int i = 0; i < renderers.Length; i++)
         {
             if (renderers[i].material.HasProperty("_Color"))
-            {
                 renderers[i].material.color = originalColors[i];
-            }
         }
     }
 
@@ -154,17 +155,6 @@ public class Player : MonoBehaviour
     {
         float duration = 2f; // 2초 동안
         float elapsed = 0f;
-
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        // 원래 색상 저장
-        List<Color> originalColors = new List<Color>();
-        foreach (var r in renderers)
-        {
-            if (r.material.HasProperty("_Color"))
-                originalColors.Add(r.material.color);
-            else
-                originalColors.Add(Color.white);
-        }
 
         while (elapsed < duration)
         {
@@ -211,7 +201,7 @@ public class Player : MonoBehaviour
 
         if (hits.Length > 0)
         {
-            // 기존 적 추적 로직 그대로
+            // 가장 가까운 적 찾기
             Collider closest = null;
             float minDist = float.MaxValue;
             foreach (var h in hits)
@@ -277,10 +267,8 @@ public class Player : MonoBehaviour
         }
     }
 
-
     public void OnAttackHit()
     {
-
         Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Enemy"));
 
         if (hits.Length > 0)
@@ -311,9 +299,12 @@ public class Player : MonoBehaviour
 
         // ✅ 공격 판정 들어간 순간 쿨타임 갱신
         lastAttackTime = Time.time;
+
+        // 공격 후 Idle 상태 유지
+        if (animator != null)
+            animator.SetBool("IsMove", false);
+        isMoving = false;
     }
-
-
 
     private void OnDrawGizmosSelected()
     {
