@@ -3,14 +3,12 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    public Player Player { get; set; }
 
+    public Player Player { get; set; }
     public BattleManager battleManager;
     public InventoryManager inventoryManager;
     public PlayerData playerData;
     public StageManager stageManager;
-
-
 
     private void Awake()
     {
@@ -21,5 +19,10 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // DataManager √ ±‚»≠
+        if (DataManager.Instance.userInfo == null)
+            DataManager.Instance.userInfo = new UserInfo();
     }
+
 }
