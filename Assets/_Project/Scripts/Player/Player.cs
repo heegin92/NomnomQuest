@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -91,13 +93,95 @@ public class Player : MonoBehaviour
         if (hud != null)
             hud.SetHP(currentHP, hp);
 
+        // 피격 효과 실행
+        StartCoroutine(HitEffect());
+
         if (currentHP <= 0) Die();
+    }
+
+    private IEnumerator HitEffect()
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        List<Color> originalColors = new List<Color>();
+
+        // 원래 색상 저장
+        foreach (var r in renderers)
+        {
+            if (r.material.HasProperty("_Color"))
+                originalColors.Add(r.material.color);
+            else
+                originalColors.Add(Color.white);
+        }
+
+        // 빨강으로 변경
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i].material.HasProperty("_Color"))
+            {
+                renderers[i].material.color = Color.red;
+            }
+        }
+
+        // 0.1초 정도 유지
+        yield return new WaitForSeconds(0.1f);
+
+        // 원래 색으로 복귀
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i].material.HasProperty("_Color"))
+            {
+                renderers[i].material.color = originalColors[i];
+            }
+        }
     }
 
     private void Die()
     {
         Debug.Log("플레이어 사망!");
-        // TODO: 게임 오버 처리, 리스폰 처리 등 넣을 수 있음
+        // 공격/이동 중단
+        isMoving = false;
+        if (animator != null) animator.SetBool("IsMove", false);
+
+        // 사망 처리 코루틴 실행
+        StartCoroutine(FadeOutAndDestroy());
+    }
+
+    private IEnumerator FadeOutAndDestroy()
+    {
+        float duration = 2f; // 2초 동안
+        float elapsed = 0f;
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        // 원래 색상 저장
+        List<Color> originalColors = new List<Color>();
+        foreach (var r in renderers)
+        {
+            if (r.material.HasProperty("_Color"))
+                originalColors.Add(r.material.color);
+            else
+                originalColors.Add(Color.white);
+        }
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].material.HasProperty("_Color"))
+                {
+                    Color c = originalColors[i];
+                    c.a = alpha;
+                    renderers[i].material.color = c;
+                }
+            }
+
+            yield return null;
+        }
+
+        // 완전히 사라진 뒤 오브젝트 제거
+        Destroy(gameObject);
     }
 
     private void SetTarget(Vector3 screenPos)
