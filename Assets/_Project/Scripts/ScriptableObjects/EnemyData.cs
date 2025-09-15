@@ -1,5 +1,5 @@
-﻿using System;
 using Ironcow.Synapse.Data;
+using System;
 using UnityEngine;
 
 [System.Serializable]
@@ -16,8 +16,7 @@ public partial class EnemyData : BaseDataSO
     public int detectRange;
     public int atkRange;
     public int attackCooldown;
-
-    [Header("Prefab")]
-    public GameObject prefab;   // ✅ 스포너에서 쓸 프리팹 연결
     public string DropItems;
+    internal GameObject prefab;
+    internal string dropItems;
 }

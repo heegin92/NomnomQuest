@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using UnityEngine;
 
+
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class Enemy : MonoBehaviour
 {
+
     [Header("데이터 참조")]
     public EnemyData data;   // ScriptableObject 참조
 
@@ -32,6 +34,8 @@ public class Enemy : MonoBehaviour
     private bool isWandering = false;
 
     private Collider groundCollider;
+
+    public object DropItemManager { get; private set; }
 
     private void Awake()
     {
@@ -85,6 +89,12 @@ public class Enemy : MonoBehaviour
             Vector3 enemyPos = new Vector3(transform.position.x, 0, transform.position.z);
             Vector3 playerPos = new Vector3(player.position.x, 0, player.position.z);
             float dist = Vector3.Distance(enemyPos, playerPos);
+
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                Debug.Log("[Enemy] P pressed, force spawn");
+                ItemDropManager.Instance.Spawn("ITE00001", transform.position);
+            }
 
             if (dist <= data.atkRange)
             {
@@ -223,9 +233,31 @@ public class Enemy : MonoBehaviour
             animator.SetBool("IsMove", false);
 
         DropLoot();
+        DropItems();
 
         StartCoroutine(FadeOutAndDestroy());
     }
+    private void DropItems()
+    {
+        Debug.Log($"[Enemy] DropItems() called on {name}");
+
+        // 파일명이 ITE00001.asset 이면 dropId도 "ITE00001"로 전달
+        ItemDropManager.Instance.Spawn("ITE00001", transform.position);
+    }
+
+
+    /* private void DropItems()
+     {
+         if (data == null || string.IsNullOrEmpty(data.dropItems))
+             return;
+
+         string[] drops = data.dropItems.Split('|');
+         foreach (var dropId in drops)
+         {
+             //DropItemManager.Instance.Spawn(dropId, transform.position);
+         }
+     }*/
+
 
     private IEnumerator FadeOutAndDestroy()
     {
