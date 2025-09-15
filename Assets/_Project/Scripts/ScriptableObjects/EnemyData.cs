@@ -17,6 +17,6 @@ public partial class EnemyData : BaseDataSO
     public int atkRange;
     public int attackCooldown;
     public string DropItems;
-    internal GameObject prefab;
+    public GameObject prefab;
     internal string dropItems;
 }

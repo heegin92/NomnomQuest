@@ -16,39 +16,45 @@ public class ItemDropManager : MonoBehaviour
             return;
         }
         Instance = this;
-
-        Debug.Log("[ItemDropManager] Awake");
-
-        itemDict.Clear();
-        foreach (var item in itemDatabase)
-        {
-            if (item == null) continue;
-            if (string.IsNullOrEmpty(item.code)) continue;
-
-            itemDict[item.code] = item;
-            Debug.Log($"[ItemDropManager] Loaded item code: {item.code}, prefab={(item.prefab == null ? "NULL" : item.prefab.name)}");
-        }
     }
 
     public void Spawn(string dropId, Vector3 position)
     {
-        Debug.Log($"[ItemDropManager] Try spawn: {dropId} at {position}");
+        Debug.Log($"[ItemDropManager] Spawn() called with {dropId}");
 
-        if (!itemDict.TryGetValue(dropId, out var data))
+        // 1. 드랍 규칙 찾기
+        var dropData = DataManager.Instance.GetData<DropObjectData>(dropId);
+        if (dropData == null)
         {
-            Debug.LogWarning($"[ItemDropManager] 아이템 {dropId} 없음!");
+            Debug.LogWarning($"DropObjectData {dropId} 없음!");
             return;
         }
 
-        if (data.prefab == null)
+        // 2. 확률 체크
+        if (Random.Range(0, 100) >= dropData.probability)
         {
-            Debug.LogWarning($"[ItemDropManager] {dropId} 프리팹 비어있음!");
+            Debug.Log($"드랍 실패 (확률 {dropData.probability}%)");
             return;
         }
 
-        var spawnPos = new Vector3(position.x, position.y + 0.5f, 0f);
-        var go = Instantiate(data.prefab, spawnPos, Quaternion.identity);
-        go.name = $"DROP_{dropId}";
-        Debug.Log($"[ItemDropManager] Spawned {dropId} at {go.transform.position}");
+        // 3. 실제 아이템 찾기
+        var itemData = DataManager.Instance.GetData<ItemData>(dropData.target);
+        if (itemData == null)
+        {
+            Debug.LogWarning($"ItemData {dropData.target} 없음!");
+            return;
+        }
+
+        // 4. 드랍 생성
+        int count = Random.Range(dropData.minValue, dropData.maxValue + 1);
+        for (int i = 0; i < count; i++)
+        {
+            var pos = new Vector3(position.x + Random.Range(-0.3f, 0.3f), position.y + 0.5f, 0f);
+            Instantiate(itemData.prefab, pos, Quaternion.identity);
+        }
+
+        Debug.Log($"드랍 성공 → {itemData.rcode} x{count}");
     }
+
+
 }

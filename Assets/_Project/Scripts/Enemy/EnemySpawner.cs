@@ -1,21 +1,50 @@
-using UnityEngine;
+ï»¿using UnityEngine;
+using Ironcow.Synapse.Data;
+using System.Collections;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [SerializeField] private EnemyData[] enemyTable;
+    [SerializeField] private string[] enemyCodes = { "ENE00001" }; // "ENE00001", "ENE00002" ...
+
+    private void Start()
+    {
+        StartCoroutine(SpawnWhenReady());
+    }
+
+    private IEnumerator SpawnWhenReady()
+    {
+        int frame = 0;
+        while (DataManager.Instance == null || !DataManager.Instance.isInit)
+        {
+            if (frame % 60 == 0) // 1ì´ˆë§ˆë‹¤ ì¶œë ¥
+                Debug.Log($"[EnemySpawner] Waiting... DataManager ready? {(DataManager.Instance != null ? DataManager.Instance.isInit : false)}");
+            frame++;
+            yield return null;
+        }
+
+        Debug.Log("[EnemySpawner] DataManager ì¤€ë¹„ ì™„ë£Œ, Spawn í˜¸ì¶œ!");
+        Spawn();
+    }
 
     public Enemy Spawn()
     {
-        // ·£´ıÀ¸·Î EnemyData ¼±ÅÃ
-        EnemyData data = enemyTable[Random.Range(0, enemyTable.Length)];
+        string code = enemyCodes[Random.Range(0, enemyCodes.Length)];
+        var data = DataManager.Instance.GetData<EnemyData>(code);
+        if (data == null || data.prefab == null)
+        {
+            Debug.LogError($"[Spawner] EnemyData {code} ë˜ëŠ” prefab ì—†ìŒ!");
+            return null;
+        }
 
-        // ÇÁ¸®ÆÕ »ı¼º
         GameObject go = Instantiate(data.prefab, transform.position, Quaternion.identity);
+        var enemy = go.GetComponent<Enemy>();
+        if (enemy == null)
+        {
+            Debug.LogError($"[Spawner] {data.prefab.name} ì— Enemy ìŠ¤í¬ë¦½íŠ¸ ì—†ìŒ!");
+            return null;
+        }
 
-        // Enemy ÄÄÆ÷³ÍÆ®¿¡ µ¥ÀÌÅÍ ÁÖÀÔ
-        Enemy enemy = go.GetComponent<Enemy>();
-        enemy.data = data;
-
+        enemy.SetCode(code); // ì½”ë“œ ì£¼ì…
         return enemy;
     }
 }

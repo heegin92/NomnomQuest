@@ -167,7 +167,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd292df8190bf348a535b4dbb41dad8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyCode: ENE00003
   data: {fileID: 11400000, guid: 25692ba1fcefe004e80fdae236af9de7, type: 2}
+  wanderRadius: 5
+  wanderInterval: 3
 --- !u!136 &8614509874472441626
 CapsuleCollider:
   m_ObjectHideFlags: 0

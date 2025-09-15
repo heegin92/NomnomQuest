@@ -1,17 +1,24 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Ironcow.Synapse.Data;
 
 public partial class DataManager : DataManagerBase<DataManager, UserInfo>
 {
-    // º°Äª ÇÁ·ÎÆÛÆ¼ (MonoSingleton.instance ¡æ Instance)
     public static DataManager Instance => instance;
 
-    private void Awake()
+    private async void Awake()
     {
         if (userInfo == null)
         {
             userInfo = new UserInfo();
-            Debug.Log("[DataManager] UserInfo »õ·Î »ı¼ºµÊ");
+            Debug.Log("[DataManager] UserInfo ìƒˆë¡œ ìƒì„±ë¨");
+        }
+
+        // âš¡ DataManagerBase ì´ˆê¸°í™”
+        if (!isInit)
+        {
+            Debug.Log("[DataManager] Init ì‹œì‘");
+            await Init();
+            Debug.Log("[DataManager] Init ì™„ë£Œ");
         }
     }
 
@@ -20,7 +27,7 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
         if (userInfo == null) userInfo = new UserInfo();
 
         userInfo.gold += amount;
-        Debug.Log($"[DataManager] °ñµå Ãß°¡µÊ ¡æ ÇöÀç °ñµå: {userInfo.gold}");
+        Debug.Log($"[DataManager] ê³¨ë“œ ì¶”ê°€ë¨ â†’ í˜„ì¬ ê³¨ë“œ: {userInfo.gold}");
     }
 
     public void AddExp(int amount)
@@ -33,7 +40,7 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
             userInfo.level++;
             userInfo.exp = 0;
             userInfo.expToNextLevel += 50;
-            Debug.Log($"[DataManager] ·¹º§¾÷! ÇöÀç ·¹º§: {userInfo.level}");
+            Debug.Log($"[DataManager] ë ˆë²¨ì—…! í˜„ì¬ ë ˆë²¨: {userInfo.level}");
         }
     }
 }

@@ -1,25 +1,21 @@
 ﻿using System.Collections;
 using UnityEngine;
-
+using Ironcow.Synapse.Data;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class Enemy : MonoBehaviour
 {
+    [Header("데이터 코드 (예: ENE00001)")]
+    [SerializeField] private string enemyCode;
 
-    [Header("데이터 참조")]
-    public EnemyData data;   // ScriptableObject 참조
-
-    [Header("런타임 상태")]
+    public EnemyData data;   // EnemyData (SO)
     private int currentHp;
 
     private Rigidbody rb;
     private Animator animator;
-
     private Transform player;
     private float lastAttackTime = -999f;
-
-    // 이동 방향
     private Vector3 moveDir = Vector3.zero;
 
     // ✅ 캐싱용
@@ -35,12 +31,26 @@ public class Enemy : MonoBehaviour
 
     private Collider groundCollider;
 
-    public object DropItemManager { get; private set; }
+    // ⚡ 코드 세팅 메서드
+    public void SetCode(string code)
+    {
+        enemyCode = code;
+        data = DataManager.Instance.GetData<EnemyData>(enemyCode);
+
+        if (data == null)
+        {
+            Debug.LogError($"[Enemy] EnemyData {enemyCode} 못 찾음!");
+            return;
+        }
+
+        currentHp = data.hp;
+    }
 
     private void Awake()
     {
-        if (data != null)
-            currentHp = data.hp;
+        // ⚡ Inspector에 enemyCode가 세팅돼 있으면 자동 로드
+        if (!string.IsNullOrEmpty(enemyCode))
+            SetCode(enemyCode);
 
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
@@ -80,6 +90,7 @@ public class Enemy : MonoBehaviour
         if (groundObj != null)
             groundCollider = groundObj.GetComponent<Collider>();
     }
+
 
     private void Update()
     {
@@ -182,8 +193,7 @@ public class Enemy : MonoBehaviour
 
     private void TryAttack()
     {
-        if (Time.time < lastAttackTime + data.attackCooldown)
-            return;
+        if (Time.time < lastAttackTime + data.attackCooldown) return;
 
         if (animator != null)
             animator.SetTrigger("IsAttack");
@@ -239,24 +249,21 @@ public class Enemy : MonoBehaviour
     }
     private void DropItems()
     {
-        Debug.Log($"[Enemy] DropItems() called on {name}");
+        Debug.Log($"[Enemy] DropItems() called, dropItems={data.DropItems}");
 
-        // 파일명이 ITE00001.asset 이면 dropId도 "ITE00001"로 전달
-        ItemDropManager.Instance.Spawn("ITE00001", transform.position);
+        if (string.IsNullOrEmpty(data.DropItems))
+        {
+            Debug.Log("[Enemy] No drop data");
+            return;
+        }
+
+        string[] drops = data.DropItems.Split('|');
+        foreach (var dropId in drops)
+        {
+            Debug.Log($"[Enemy] Try spawn {dropId}");
+            ItemDropManager.Instance.Spawn(dropId, transform.position);
+        }
     }
-
-
-    /* private void DropItems()
-     {
-         if (data == null || string.IsNullOrEmpty(data.dropItems))
-             return;
-
-         string[] drops = data.dropItems.Split('|');
-         foreach (var dropId in drops)
-         {
-             //DropItemManager.Instance.Spawn(dropId, transform.position);
-         }
-     }*/
 
 
     private IEnumerator FadeOutAndDestroy()

@@ -17,7 +17,7 @@ MonoBehaviour:
   desc: 
   displayName: "\uAD11\uC11D\uC2AC\uB77C\uC784"
   description: 
-  hp: 50
+  hp: 30
   def: 3
   atk: 3
   walkSpeed: 2
@@ -26,5 +26,5 @@ MonoBehaviour:
   detectRange: 3
   atkRange: 1
   attackCooldown: 1
-  prefab: {fileID: 9013237028364413841, guid: 2da1c7e7399f2614083317900ee60518, type: 3}
   DropItems: DRO00001|DRO00019
+  prefab: {fileID: 9013237028364413841, guid: 2da1c7e7399f2614083317900ee60518, type: 3}
