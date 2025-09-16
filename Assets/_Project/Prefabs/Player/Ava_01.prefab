@@ -726,7 +726,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 0
   m_SortAtRoot: 0
 --- !u!114 &6740318759542743355
 MonoBehaviour:
@@ -858,6 +858,7 @@ GameObject:
   - component: {fileID: 3106233151141584681}
   - component: {fileID: 335646536812859509}
   - component: {fileID: 6385757650627190289}
+  - component: {fileID: 4107768256225779720}
   m_Layer: 6
   m_Name: Ava_01
   m_TagString: Player
@@ -897,7 +898,7 @@ MonoBehaviour:
   moveSpeed: 10
   attackRange: 3
   attackCooldown: 0.5
-  attackDamage: 5
+  attackDamage: 7
   wanderRadius: 5
   wanderInterval: 3
   hud: {fileID: 0}
@@ -963,6 +964,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cae535424a293224fbc4364a263d02c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4107768256225779720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5352673630492711781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7378a760c40726f4e9d9db69e92289d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  precision: 100
 --- !u!1 &5676837649412555466
 GameObject:
   m_ObjectHideFlags: 0
