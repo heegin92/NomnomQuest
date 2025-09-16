@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7241519489779058316}
   - component: {fileID: 5886590509824511768}
   m_Layer: 0
-  m_Name: PF_TestDrop
+  m_Name: ITE00001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

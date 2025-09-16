@@ -785,7 +785,7 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Standalone: USE_AUTO_CACHING;USE_UPDATABLE
+    Standalone: USE_AUTO_CACHING;USE_UPDATABLE;CINEMACHINE;UNITY_POST_PROCESSING_STACK_V2
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}

@@ -42,10 +42,19 @@ public class ItemPickup : MonoBehaviour
             // 충분히 가까워지면 아이템 획득 처리
             if (dist < 0.3f)
             {
-                Debug.Log($"[ItemPickup] {itemCode} {amount}개 획득!");
-                // 나중에 인벤토리에 넣을 자리: InventoryManager.Instance.Add(itemCode, amount);
+                // 실제 인벤토리에 반영
+                if (InventoryManager.Instance != null)
+                {
+                    InventoryManager.Instance.Add(itemCode, amount);
+                }
+                else
+                {
+                    Debug.LogWarning("[ItemPickup] InventoryManager 없음! 로그만 표시");
+                }
+
                 Destroy(gameObject);
             }
+
         }
     }
 }
