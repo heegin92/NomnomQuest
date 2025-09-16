@@ -701,6 +701,11 @@ MonoBehaviour:
   - ENE00001
   - ENE00002
   - ENE00003
+  spawnCount: 5
+  spawnRadius: 20
+  loopSpawn: 1
+  spawnInterval: 5
+  maxEnemies: 10
 --- !u!1 &923374041
 GameObject:
   m_ObjectHideFlags: 0

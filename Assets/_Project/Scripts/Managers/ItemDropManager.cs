@@ -49,12 +49,17 @@ public class ItemDropManager : MonoBehaviour
         int count = Random.Range(dropData.minValue, dropData.maxValue + 1);
         for (int i = 0; i < count; i++)
         {
-            var pos = new Vector3(position.x + Random.Range(-0.3f, 0.3f), position.y + 0.5f, 0f);
-            Instantiate(itemData.prefab, pos, Quaternion.identity);
+            var pos = new Vector3(position.x + Random.Range(-0.3f, 0.3f), 0f, position.z + Random.Range(-0.3f, 0.3f));
+            var go = Instantiate(itemData.prefab, pos, Quaternion.identity);
+
+            // 자동 흡수 스크립트 붙이기
+            var pickup = go.GetComponent<ItemPickup>();
+            if (pickup == null) pickup = go.AddComponent<ItemPickup>();
+            pickup.itemCode = itemData.rcode;
+            pickup.amount = 1; // 추후 조정 가능
         }
 
-        Debug.Log($"드랍 성공 → {itemData.rcode} x{count}");
+
+
     }
-
-
 }
