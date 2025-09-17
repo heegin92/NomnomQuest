@@ -220,16 +220,26 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(int dmg)
     {
+        bool isCrit = Random.value < 0.2f; // 20% 확률 치명타
         int finalDamage = Mathf.Max(0, dmg - data.def);
+
+        if (isCrit)
+            finalDamage = Mathf.RoundToInt(finalDamage * 1.5f); // 치명타 배율
+
         currentHp -= finalDamage;
 
         Debug.Log($"{data.displayName} 피격! HP: {currentHp}/{data.hp}");
+
+        // 💥 데미지 텍스트
+        DamageTextManager.Instance.ShowDamage(finalDamage, transform.position, isCrit);
 
         StartCoroutine(HitFlash());
 
         if (IsDead())
             Die();
     }
+
+
 
     public bool IsDead() => currentHp <= 0;
 
