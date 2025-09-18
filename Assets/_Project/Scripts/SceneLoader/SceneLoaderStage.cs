@@ -1,101 +1,111 @@
-using System.Collections;
-using UnityEngine;
+ï»¿using UnityEngine;
 #if CINEMACHINE
 using Cinemachine;
 #endif
 
 public class SceneLoaderStage : MonoBehaviour
 {
-    [Header("½ºÅ×ÀÌÁö ¾À ¼³Á¤")]
+    [Header("ìŠ¤í…Œì´ì§€ ì”¬ ì„¤ì •")]
     [SerializeField] private int stageNum = 1;
 
-    [Tooltip("ÇÃ·¹ÀÌ¾î ÇÁ¸®ÆÕ (ÇÊ¼ö)")]
+    [Tooltip("í”Œë ˆì´ì–´ í”„ë¦¬íŒ¹ (í•„ìˆ˜)")]
     [SerializeField] private GameObject playerPrefab;
 
-    [Tooltip("½ºÅ×ÀÌÁö ½ÃÀÛ ½Ã Àç»ıÇÒ BGM (¼±ÅÃ)")]
-    [SerializeField] private AudioClip bgSoundClip;
-
-    [Header("½ºÆù Á¤º¸")]
+    [Tooltip("ìŠ¤í° ì§€ì  (ì—†ìœ¼ë©´ Fallback ì‚¬ìš©)")]
     [SerializeField] private Transform playerSpawnPoint;
     [SerializeField] private Vector3 playerSpawnPosFallback = Vector3.zero;
 
-    [Header("Ä«¸Ş¶ó ¿É¼Ç")]
-    [SerializeField] private bool snapCameraToPlayerOnStart = true;
-    [SerializeField] private bool reuseExistingPlayerIfAny = true;
-
-    [Tooltip("Ä«¸Ş¶ó ¿ÀÇÁ¼Â (isometric ´À³¦ Á¶Á¤)")]
-    [SerializeField] private Vector3 cameraOffset = new Vector3(0, 10, -10);
-
-    [Tooltip("Ä«¸Ş¶ó ÃßÀû ºÎµå·¯¿ò")]
-    [Range(0, 10f)][SerializeField] private float cameraDamping = 2f;
+    [Tooltip("ìŠ¤í…Œì´ì§€ ì‹œì‘ ì‹œ ì¬ìƒí•  BGM (ì„ íƒ)")]
+    [SerializeField] private AudioClip bgSoundClip;
 
     private void Awake()
     {
         if (playerPrefab == null)
         {
-            Debug.LogError("[SceneLoaderStage] Player PrefabÀÌ ºñ¾îÀÖ½À´Ï´Ù.");
+            Debug.LogError("[SceneLoaderStage] Player Prefabì´ ë¹„ì–´ìˆìŠµë‹ˆë‹¤.");
             return;
         }
 
+        // âœ… ìŠ¤í° ìœ„ì¹˜ ê³„ì‚°
         Vector3 spawnPos = playerSpawnPoint ? playerSpawnPoint.position : playerSpawnPosFallback;
-        Player player = null;
 
-        if (reuseExistingPlayerIfAny && GameManager.Instance != null && GameManager.Instance.Player != null)
+        // âœ… Player ìƒì„± & GameManagerì— ë“±ë¡
+        var go = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+
+        if (go == null)
         {
-            player = GameManager.Instance.Player;
-            var pTr = player.transform;
-            pTr.position = spawnPos;
-            pTr.rotation = Quaternion.identity;
-            ResetPlayerStateIfNeeded(player);
+            Debug.LogError("[SceneLoaderStage] Instantiate ì‹¤íŒ¨");
+            return;
+        }
+        var player = go.GetComponent<Player>();
+
+        if (player == null)
+        {
+            Debug.LogError("[SceneLoaderStage] Player Prefabì— Player ìŠ¤í¬ë¦½íŠ¸ ì—†ìŒ!");
+            return;
+        }
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.Player = player;
+            GameManager.Instance.CurrentStage = stageNum;
+            Debug.Log("[SceneLoaderStage] Player ìƒì„± & GameManager ë“±ë¡ ì™„ë£Œ");
         }
         else
         {
-            var go = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
-            player = go.GetComponent<Player>();
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.Player = player;
-            }
+            Debug.LogError("[SceneLoaderStage] GameManager.Instance == null");
         }
 
-        // === BGM ===
+        // âœ… BGM ì¬ìƒ
         if (bgSoundClip != null && SoundManager.Instance != null)
-        {
             SoundManager.Instance.ChangeBackGroundMusic(bgSoundClip);
-        }
 
-        // === Ä«¸Ş¶ó Follow ÀÚµ¿ ¿¬°á ===
+        // âœ… ì¹´ë©”ë¼ Follow ì—°ê²°
 #if CINEMACHINE
-    var vcam = FindObjectOfType<CinemachineVirtualCamera>();
-    if (vcam != null && player != null)
-    {
-        Debug.Log("[SceneLoaderStage] VCam Follow ¿¬°áµÊ");
-        vcam.Follow = player.transform;
-        vcam.LookAt = null;
-    }
-    else
-    {
-        Debug.LogWarning("[SceneLoaderStage] VCam ¾øÀ½ ¶Ç´Â Player ¾øÀ½");
-    }
+        var vcam = FindObjectOfType<CinemachineVirtualCamera>();
+        if (vcam != null)
+        {
+            vcam.Follow = player.transform;
+            vcam.LookAt = null;
+            Debug.Log("[SceneLoaderStage] VCam Follow ì—°ê²°ë¨");
+        }
+        else
+        {
+            Debug.LogWarning("[SceneLoaderStage] VCam ì—†ìŒ");
+        }
 #endif
     }
 
     private void Start()
     {
-        if (GameManager.Instance != null && GameManager.Instance.Player != null && GameManager.Instance.Player.HUD != null)
+        Debug.Log("[SceneLoaderStage] Start() ì§„ì… - ë°ì´í„° ë¡œë“œ ì‹œì‘");
+
+        Debug.Log($"DataManager.Instance = {(DataManager.Instance != null ? "O" : "X")}");
+        Debug.Log($"DataManager.userInfo = {(DataManager.Instance != null && DataManager.Instance.userInfo != null ? "O" : "X")}");
+        Debug.Log($"GameManager.Instance = {(GameManager.Instance != null ? "O" : "X")}");
+        Debug.Log($"GameManager.Player = {(GameManager.Instance != null && GameManager.Instance.Player != null ? "O" : "X")}");
+
+        if (DataManager.Instance != null && DataManager.Instance.userInfo != null && GameManager.Instance.Player != null)
         {
-            GameManager.Instance.Player.HUD.SetStageText(stageNum);
+            var p = GameManager.Instance.Player;
+            var info = DataManager.Instance.userInfo;
+
+            p.data.level = info.level;
+            p.data.exp = info.exp;
+            p.data.expToNextLevel = info.expToNextLevel;
+            p.data.attack = info.attack;
+            p.data.maxHealth = info.maxHealth;
+            p.data.health = Mathf.Clamp(info.health, 0, p.data.maxHealth);
+            p.data.gold = info.gold;
+
+            Debug.Log($"[SceneLoaderStage] Player ë°ì´í„° ë¡œë“œ ì™„ë£Œ â†’ HP {p.data.health}/{p.data.maxHealth}, EXP {p.data.exp}/{p.data.expToNextLevel}, GOLD {p.data.gold}");
+        }
+        else
+        {
+            Debug.LogWarning("[SceneLoaderStage] ë™ê¸°í™” ì¡°ê±´ ë¶ˆì¶©ì¡± â†’ ìŠ¤í‚µë¨");
         }
     }
 
-    private void ResetPlayerStateIfNeeded(Player player)
-    {
-        var rb = player.GetComponent<Rigidbody>();
-        if (rb) rb.velocity = Vector3.zero;
-
-        var rb2d = player.GetComponent<Rigidbody2D>();
-        if (rb2d) rb2d.velocity = Vector2.zero;
-    }
 
     private void OnDrawGizmosSelected()
     {

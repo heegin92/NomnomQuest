@@ -1,33 +1,74 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // TextMeshPro »ç¿ë ½Ã
+using TMPro;
 
 public class PlayerHUD : MonoBehaviour
 {
-    [Header("½ºÅ×ÀÌÁö ¹øÈ£ Ç¥½Ã")]
-    [SerializeField] private TextMeshProUGUI stageText;
+    [Header("ìƒíƒœë°”")]
+    public Slider hpBar;
+    public Slider expBar;
 
-    [Header("Ã¼·Â Ç¥½Ã")]
-    [SerializeField] private Slider hpBar;
+    [Header("í…ìŠ¤íŠ¸")]
+    public TextMeshProUGUI levelText;
+    public TextMeshProUGUI goldText;
+    public TextMeshProUGUI stageText;
 
-    [Header("EXP Ç¥½Ã")]
-    [SerializeField] private Slider expBar;
+    private Player player;
 
-    public void SetStageText(int stageNum)
+    private void Awake()
     {
-        if (stageText != null)
-            stageText.text = $"Stage {stageNum}";
+        Debug.Log("[PlayerHUD] Awake ì‹¤í–‰ë¨");
     }
 
-    public void SetHP(float current, float max)
+    private void Start()
     {
-        if (hpBar != null)
-            hpBar.value = current / max;
+        player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        if (player == null)
+        {
+            Debug.LogWarning("[PlayerHUD] Startì—ì„œ Player ëª» ì°¾ìŒ!");
+        }
+        else
+        {
+            Debug.Log("[PlayerHUD] Startì—ì„œ Player ì°¾ìŒ: " + player.name);
+        }
+        UpdateHUD();
     }
 
-    public void SetExp(float current, float max)
+    private void Update()
     {
-        if (expBar != null)
-            expBar.value = current / max;
+        UpdateHUD();
+    }
+
+    private void UpdateHUD()
+    {
+        if (player == null)
+        {
+            player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+            if (player == null)
+            {
+                Debug.LogWarning("[PlayerHUD] UpdateHUD í˜¸ì¶œë¨ - Player ì—†ìŒ");
+                return;
+            }
+            else
+            {
+                Debug.Log("[PlayerHUD] UpdateHUDì—ì„œ Player ì°¸ì¡° ì„±ê³µ!");
+            }
+        }
+
+        if (hpBar == null || expBar == null || levelText == null || goldText == null || stageText == null)
+        {
+            Debug.LogError("[PlayerHUD] Inspector ìŠ¬ë¡¯ ì—°ê²° ì•ˆ ë¨!");
+            return;
+        }
+
+        float hpRatio = (float)player.CurrentHP / player.MaxHP;
+        float expRatio = (float)player.data.exp / player.data.expToNextLevel;
+
+        hpBar.value = hpRatio;
+        expBar.value = expRatio;
+        levelText.text = $"Lv. {player.data.level}";
+        goldText.text = $"{player.data.gold} G";
+        stageText.text = $"Stage {GameManager.Instance.CurrentStage}";
+
     }
 }

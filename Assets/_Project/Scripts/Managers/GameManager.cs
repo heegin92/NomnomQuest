@@ -1,10 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     public Player Player { get; set; }
+    public int CurrentStage { get; set; }   // ✅ object → int 로 변경
+
     public BattleManager battleManager;
     public InventoryManager inventoryManager;
     public PlayerData playerData;
@@ -20,9 +22,8 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // DataManager �ʱ�ȭ
+        // DataManager 초기화
         if (DataManager.Instance.userInfo == null)
             DataManager.Instance.userInfo = new UserInfo();
     }
-
 }

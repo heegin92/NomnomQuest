@@ -1,4 +1,4 @@
-[System.Serializable]
+﻿[System.Serializable]
 public class PlayerData
 {
     public int level = 1;
@@ -6,7 +6,10 @@ public class PlayerData
     public int expToNextLevel = 100;
 
     public int attack = 10;
-    public int health = 100;
+
+    public int maxHealth = 100;   // ✅ 최대 체력
+    public int health = 100;      // ✅ 현재 체력
+
     public int gold = 0;
 
     public void AddExp(int amount)
@@ -24,6 +27,7 @@ public class PlayerData
         exp = 0;
         expToNextLevel += 50;
         attack += 5;
-        health += 20;
+        maxHealth += 20;   // ✅ 최대 체력 증가
+        health = maxHealth; // ✅ 레벨업 시 체력 회복
     }
 }

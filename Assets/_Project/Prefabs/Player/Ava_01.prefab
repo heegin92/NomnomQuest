@@ -895,13 +895,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9682aa1a20ad8cf44829c3204969b74d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hud: {fileID: 1646815160924871376, guid: 92fe879ac2ace8f4fa586c8a21e085fd, type: 3}
+  data:
+    level: 1
+    exp: 0
+    expToNextLevel: 100
+    attack: 10
+    maxHealth: 100
+    health: 100
+    gold: 0
   moveSpeed: 10
   attackRange: 3
   attackCooldown: 0.5
   attackDamage: 7
   wanderRadius: 5
   wanderInterval: 3
-  hud: {fileID: 0}
 --- !u!136 &3106233151141584681
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -1,26 +1,34 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class Player : MonoBehaviour
 {
+    [Header("HUD 연결")]
+    [SerializeField] private PlayerHUD hud;
+    public PlayerHUD HUD => hud;
+
+    [Header("데이터")]
+    public PlayerData data = new PlayerData();
+
     [Header("이동 설정")]
     [SerializeField] private float moveSpeed = 5f;
 
     [Header("공격 설정")]
-    [SerializeField] private float attackRange = 2f;      // 공격 범위
-    [SerializeField] private float attackCooldown = 1f;   // 쿨타임
-    [SerializeField] private int attackDamage = 10;       // 공격력
-    [SerializeField] private float wanderRadius = 5f;     // 배회 범위
-    [SerializeField] private float wanderInterval = 3f;   // 몇 초마다 새 목표 잡을지
-    [SerializeField] private PlayerHUD hud;
-    public PlayerHUD HUD => hud;
+    [SerializeField] private float attackRange = 2f;
+    [SerializeField] private float attackCooldown = 1f;
+    [SerializeField] private int attackDamage = 10;
+    [SerializeField] private float wanderRadius = 5f;
+    [SerializeField] private float wanderInterval = 3f;
 
-    private int hp = 100;
-    private int currentHP;
+    // ✅ HP 관리
+    public int CurrentHP
+    {
+        get => data.health;
+        set => data.health = Mathf.Clamp(value, 0, MaxHP);
+    }
+    public int MaxHP => data.maxHealth;
 
     private Rigidbody rb;
     private Vector3 targetPos;
@@ -30,7 +38,7 @@ public class Player : MonoBehaviour
     private Animator animator;
     private float lastAttackTime = -999f;
 
-    // ✅ 캐싱용
+    // ✅ 렌더러 캐싱
     private Renderer[] renderers;
     private Color[] originalColors;
 
@@ -41,9 +49,8 @@ public class Player : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
         animator = GetComponentInChildren<Animator>();
 
-        targetPos = transform.position; // 초기값
+        targetPos = transform.position;
 
-        // ✅ Renderer & 원래 색상 캐싱
         renderers = GetComponentsInChildren<Renderer>();
         originalColors = new Color[renderers.Length];
         for (int i = 0; i < renderers.Length; i++)
@@ -55,7 +62,25 @@ public class Player : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Start()
+    {
+        // ✅ HUD 먼저 연결
+        if (hud == null)
+            hud = FindObjectOfType<PlayerHUD>();
+
+        if (hud != null)
+            Debug.Log("[Player] HUD 연결 성공");
+        else
+            Debug.LogWarning("[Player] HUD 연결 실패");
+
+        // ✅ HP/EXP 초기화는 HUD 연결 이후에
+        CurrentHP = MaxHP;
+        data.exp = 0;
+    }
+
+
+
+    private void Update()
     {
         // PC 클릭 이동
         if (Input.GetMouseButtonDown(0))
@@ -71,7 +96,6 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // 공격 중일 땐 이동 차단
         if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
             return;
 
@@ -85,7 +109,6 @@ public class Player : MonoBehaviour
 
             if (dir.sqrMagnitude > 0.01f)
             {
-                // 좌우 플립만
                 if (dir.x > 0.01f)
                     transform.localScale = new Vector3(1, 1, 1);
                 else if (dir.x < -0.01f)
@@ -100,39 +123,32 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
-        currentHP = hp;
-        if (hud != null)
-            hud.SetHP(currentHP, hp);
-    }
-
+    // ✅ 데미지 처리
     public void TakeDamage(int dmg)
     {
-        currentHP -= dmg;
-        if (hud != null)
-            hud.SetHP(currentHP, hp);
+        Debug.Log($"[Player] 데미지 받음: {dmg}");
 
-        // 피격 효과 실행
+        data.health -= dmg;
+        if (data.health < 0) data.health = 0;
+
+        if (DataManager.Instance != null && DataManager.Instance.userInfo != null)
+            DataManager.Instance.userInfo.health = data.health;
+
         StartCoroutine(HitEffect());
 
-        if (currentHP <= 0) Die();
+        if (CurrentHP <= 0) Die();
     }
 
-    // ✅ HitEffect 캐싱 버전
     private IEnumerator HitEffect()
     {
-        // 빨강으로 변경
         for (int i = 0; i < renderers.Length; i++)
         {
             if (renderers[i].material.HasProperty("_Color"))
                 renderers[i].material.color = Color.red;
         }
 
-        // 0.1초 유지
         yield return new WaitForSeconds(0.1f);
 
-        // 원래 색으로 복구
         for (int i = 0; i < renderers.Length; i++)
         {
             if (renderers[i].material.HasProperty("_Color"))
@@ -143,11 +159,8 @@ public class Player : MonoBehaviour
     private void Die()
     {
         Debug.Log("플레이어 사망!");
-        // 공격/이동 중단
         isMoving = false;
         if (animator != null) animator.SetBool("IsMove", false);
-
-        // 사망 처리 코루틴 실행
         StartCoroutine(FadeOutAndDestroy());
     }
 
@@ -170,12 +183,36 @@ public class Player : MonoBehaviour
                     renderers[i].material.color = c;
                 }
             }
-
             yield return null;
         }
-
-        // 완전히 사라진 뒤 오브젝트 제거
         Destroy(gameObject);
+    }
+
+    // ✅ 골드
+    public void GainGold(int amount)
+    {
+        data.gold += amount;
+        if (DataManager.Instance != null && DataManager.Instance.userInfo != null)
+        {
+            DataManager.Instance.userInfo.gold = data.gold;
+            DataManager.Instance.SaveData();
+        }
+    }
+
+    // ✅ 경험치
+    public void GainExp(int amount)
+    {
+        data.AddExp(amount);
+
+        if (DataManager.Instance != null && DataManager.Instance.userInfo != null)
+        {
+            DataManager.Instance.userInfo.level = data.level;
+            DataManager.Instance.userInfo.exp = data.exp;
+            DataManager.Instance.userInfo.expToNextLevel = data.expToNextLevel;
+            DataManager.Instance.userInfo.attack = data.attack;
+            DataManager.Instance.userInfo.health = data.health;
+            DataManager.Instance.SaveData();
+        }
     }
 
     private void SetTarget(Vector3 screenPos)
@@ -192,16 +229,13 @@ public class Player : MonoBehaviour
 
     private void TryAutoAttack()
     {
-        // 쿨타임 확인
         if (Time.time < lastAttackTime + attackCooldown)
             return;
 
-        // Enemy 탐지
         Collider[] hits = Physics.OverlapSphere(transform.position, attackRange * 3f, LayerMask.GetMask("Enemy"));
 
         if (hits.Length > 0)
         {
-            // 가장 가까운 적 찾기
             Collider closest = null;
             float minDist = float.MaxValue;
             foreach (var h in hits)
@@ -220,14 +254,12 @@ public class Player : MonoBehaviour
 
                 if (distToEnemy > attackRange)
                 {
-                    // 👉 사거리 밖 → 적에게 이동
                     targetPos = new Vector3(closest.transform.position.x, 0f, closest.transform.position.z);
                     isMoving = true;
                     if (animator != null) animator.SetBool("IsMove", true);
                 }
                 else
                 {
-                    // 👉 사거리 안 → 공격
                     isMoving = false;
                     if (animator != null) animator.SetBool("IsMove", false);
 
@@ -242,12 +274,10 @@ public class Player : MonoBehaviour
         }
         else
         {
-            // 👉 적이 하나도 없을 때 → 랜덤 배회
             if (Time.time > lastWanderTime + wanderInterval && !isMoving)
             {
                 lastWanderTime = Time.time;
 
-                // 랜덤 위치 생성
                 Vector3 randomOffset = new Vector3(
                     UnityEngine.Random.Range(-wanderRadius, wanderRadius),
                     0f,
@@ -256,7 +286,6 @@ public class Player : MonoBehaviour
 
                 Vector3 randomPos = transform.position + randomOffset;
 
-                // 실제 Ground 위 좌표로 보정
                 if (Physics.Raycast(randomPos + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 20f, LayerMask.GetMask("Ground")))
                 {
                     targetPos = new Vector3(hit.point.x, 0f, hit.point.z);
@@ -273,7 +302,6 @@ public class Player : MonoBehaviour
 
         if (hits.Length > 0)
         {
-            // 가장 가까운 적 1명만 찾기
             Collider closest = null;
             float minDist = float.MaxValue;
             foreach (var h in hits)
@@ -297,10 +325,8 @@ public class Player : MonoBehaviour
             }
         }
 
-        // ✅ 공격 판정 들어간 순간 쿨타임 갱신
         lastAttackTime = Time.time;
 
-        // 공격 후 Idle 상태 유지
         if (animator != null)
             animator.SetBool("IsMove", false);
         isMoving = false;

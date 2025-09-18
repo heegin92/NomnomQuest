@@ -252,11 +252,30 @@ public class Enemy : MonoBehaviour
         if (animator != null)
             animator.SetBool("IsMove", false);
 
+        // ✅ 플레이어에게 보상 지급
+        if (GameManager.Instance != null && GameManager.Instance.Player != null)
+        {
+            var playerComp = GameManager.Instance.Player;
+
+            // 경험치 & 골드 지급
+            playerComp.GainExp(data.exp);
+            playerComp.GainGold(data.gold);
+
+            Debug.Log($"[Enemy] {data.displayName} -> Player 보상 지급 완료 (EXP {data.exp}, GOLD {data.gold})");
+        }
+        else
+        {
+            Debug.LogWarning("[Enemy] 보상 지급 실패 - Player를 찾을 수 없음!");
+        }
+
+        // ✅ 아이템 드랍
         DropLoot();
         DropItems();
 
+        // ✅ 페이드아웃 후 제거
         StartCoroutine(FadeOutAndDestroy());
     }
+
     private void DropItems()
     {
         Debug.Log($"[Enemy] DropItems() called, dropItems={data.DropItems}");
