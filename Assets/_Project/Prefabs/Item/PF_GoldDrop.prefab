@@ -100,6 +100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemCode: Gold
   amount: 1
+  isGold: 0
   absorbRange: 3
   absorbSpeed: 5
 --- !u!135 &5886590509824511768
@@ -121,5 +122,5 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1.12
+  m_Radius: 1.25
   m_Center: {x: 0, y: 0, z: 0}

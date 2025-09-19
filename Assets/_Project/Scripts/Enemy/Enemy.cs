@@ -22,6 +22,8 @@ public class Enemy : MonoBehaviour
     private Renderer[] renderers;
     private Color[] originalColors;
 
+    private bool isDead = false;
+
     [Header("배회 설정")]
     [SerializeField] private float wanderRadius = 5f;
     [SerializeField] private float wanderInterval = 3f;
@@ -94,6 +96,8 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
+        if (isDead) return;
+
         if (player != null)
         {
             // y 무시한 평면 거리 계산
@@ -136,6 +140,8 @@ public class Enemy : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isDead) return; // ⭐ 물리 이동도 막음
+
         if (moveDir != Vector3.zero)
         {
             Vector3 newPos = transform.position + moveDir * data.walkSpeed * Time.fixedDeltaTime;
@@ -220,6 +226,8 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(int dmg)
     {
+
+        if (isDead) return; // 죽었으면 무시
         bool isCrit = Random.value < 0.2f; // 20% 확률 치명타
         int finalDamage = Mathf.Max(0, dmg - data.def);
 
@@ -245,6 +253,9 @@ public class Enemy : MonoBehaviour
 
     public void Die()
     {
+        if (isDead) return;   // ⭐ 이미 죽었으면 다시 실행 안 함
+        isDead = true;
+
         Debug.Log($"{data.displayName} 사망! EXP {data.exp}, Gold {data.gold}");
 
         moveDir = Vector3.zero;
@@ -270,6 +281,11 @@ public class Enemy : MonoBehaviour
         // ✅ 아이템 드랍
         DropLoot();
         DropItems();
+
+        // ✅ 모든 행동 정지 (AI 멈춤)
+        rb.velocity = Vector3.zero;
+        rb.isKinematic = true;   // 물리 멈춤
+        GetComponent<Collider>().enabled = false; // 충돌 꺼줌
 
         // ✅ 페이드아웃 후 제거
         StartCoroutine(FadeOutAndDestroy());
