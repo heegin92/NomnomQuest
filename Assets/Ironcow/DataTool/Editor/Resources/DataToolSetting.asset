@@ -17,4 +17,49 @@ MonoBehaviour:
   classGeneratePath: {fileID: 102900000, guid: f4ea96f4b08170346995dd0746484027, type: 3}
   GSheetUrl: https://docs.google.com/spreadsheets/d/1O2Rpls87OsIlDXSqyr1MhdJKKXVv1XIJuODbLS6otVg/
   infoSheet: 181124050
-  sheets: []
+  sheets:
+  - className: ItemData
+    sheetId: 1249418767
+    key: ITE
+    isUpdate: 0
+    items: []
+  - className: EnemyData
+    sheetId: 1227733515
+    key: ENE
+    isUpdate: 0
+    items: []
+  - className: DropObjectData
+    sheetId: 427235159
+    key: DRO
+    isUpdate: 0
+    items: []
+  - className: WorldObjectData
+    sheetId: 1529108324
+    key: WOB
+    isUpdate: 0
+    items: []
+  - className: FoodRecipeData
+    sheetId: 58105743
+    key: FOR
+    isUpdate: 0
+    items: []
+  - className: CraftRecipeData
+    sheetId: 34339204
+    key: CRE
+    isUpdate: 0
+    items: []
+  - className: BuildRecipeData
+    sheetId: 424830092
+    key: BRE
+    isUpdate: 0
+    items: []
+  - className: BuildObjectData
+    sheetId: 1289590468
+    key: BOB
+    isUpdate: 0
+    items: []
+  - className: UserItemData
+    sheetId: 761980322
+    key: 2
+    isUpdate: 0
+    items: []

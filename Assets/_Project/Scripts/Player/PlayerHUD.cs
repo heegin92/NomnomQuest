@@ -20,6 +20,18 @@ public class PlayerHUD : MonoBehaviour
         Debug.Log("[PlayerHUD] Awake 실행됨");
     }
 
+    private void OnEnable()
+    {
+        // ⭐ 이벤트 구독
+        DataManager.OnGoldChanged += UpdateGoldUI;
+    }
+
+    private void OnDisable()
+    {
+        // ⭐ 이벤트 해제 (메모리 릭 방지)
+        DataManager.OnGoldChanged -= UpdateGoldUI;
+    }
+
     private void Start()
     {
         player = GameManager.Instance != null ? GameManager.Instance.Player : null;
@@ -31,7 +43,10 @@ public class PlayerHUD : MonoBehaviour
         {
             Debug.Log("[PlayerHUD] Start에서 Player 찾음: " + player.name);
         }
+
+        // 초기화 시 한 번 반영
         UpdateHUD();
+        UpdateGoldUI(DataManager.Instance.userInfo.gold);
     }
 
     private void Update()
@@ -44,15 +59,7 @@ public class PlayerHUD : MonoBehaviour
         if (player == null)
         {
             player = GameManager.Instance != null ? GameManager.Instance.Player : null;
-            if (player == null)
-            {
-                Debug.LogWarning("[PlayerHUD] UpdateHUD 호출됨 - Player 없음");
-                return;
-            }
-            else
-            {
-                Debug.Log("[PlayerHUD] UpdateHUD에서 Player 참조 성공!");
-            }
+            if (player == null) return;
         }
 
         if (hpBar == null || expBar == null || levelText == null || goldText == null || stageText == null)
@@ -67,8 +74,13 @@ public class PlayerHUD : MonoBehaviour
         hpBar.value = hpRatio;
         expBar.value = expRatio;
         levelText.text = $"Lv. {player.data.level}";
-        goldText.text = $"{player.data.gold} G";
         stageText.text = $"Stage {GameManager.Instance.CurrentStage}";
+    }
 
+    // ⭐ 골드 전용 UI 업데이트
+    private void UpdateGoldUI(int newGold)
+    {
+        if (goldText != null)
+            goldText.text = $"{newGold} G";
     }
 }

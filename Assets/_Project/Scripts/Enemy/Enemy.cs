@@ -253,19 +253,18 @@ public class Enemy : MonoBehaviour
             animator.SetBool("IsMove", false);
 
         // ✅ 플레이어에게 보상 지급
+        // ✅ 경험치 지급
         if (GameManager.Instance != null && GameManager.Instance.Player != null)
         {
             var playerComp = GameManager.Instance.Player;
-
-            // 경험치 & 골드 지급
             playerComp.GainExp(data.exp);
-            playerComp.GainGold(data.gold);
-
-            Debug.Log($"[Enemy] {data.displayName} -> Player 보상 지급 완료 (EXP {data.exp}, GOLD {data.gold})");
+            Debug.Log($"[Enemy] {data.displayName} -> Player 보상 지급 완료 (EXP {data.exp})");
         }
-        else
+
+        // ✅ 골드 드랍 (골드 수치 > 0일 때만)
+        if (data.gold > 0)
         {
-            Debug.LogWarning("[Enemy] 보상 지급 실패 - Player를 찾을 수 없음!");
+            ItemDropManager.Instance.SpawnGold(data.gold, transform.position);
         }
 
         // ✅ 아이템 드랍

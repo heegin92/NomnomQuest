@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Ironcow.Synapse.Data;
 using System.IO;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
 {
     public static DataManager Instance => instance;
     private string savePath;
+    // ⭐ 골드 변경 이벤트
+    public static event Action<int> OnGoldChanged;
 
     private async void Awake()
     {
@@ -117,4 +120,17 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
             return info;
         }
     }
+    public void AddGold(int amount)
+    {
+        if (userInfo == null) userInfo = new UserInfo();
+
+        userInfo.gold += amount;
+
+        Debug.Log($"[DataManager] 골드 추가됨 → 현재 골드: {userInfo.gold}");
+        SaveData();
+
+        // ⭐ 이벤트 호출
+        OnGoldChanged?.Invoke(userInfo.gold);
+    }
+
 }

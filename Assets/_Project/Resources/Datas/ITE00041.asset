@@ -15,6 +15,7 @@ MonoBehaviour:
   rcode: ITE00041
   name: 
   desc: 
+  code: 
   displayName: "\uBC84\uC12F\uAD6C\uC774"
   description: "\uC22F\uBD88\uC5D0 \uAD6C\uC6B4 \uACE0\uC18C\uD55C \uBC84\uC12F"
   type: 1
@@ -25,3 +26,4 @@ MonoBehaviour:
   hungry: 30
   effect: 0
   equipPrefab: 
+  prefab: {fileID: 0}

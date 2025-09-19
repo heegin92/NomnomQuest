@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemDropManager : MonoBehaviour
@@ -22,44 +22,70 @@ public class ItemDropManager : MonoBehaviour
     {
         Debug.Log($"[ItemDropManager] Spawn() called with {dropId}");
 
-        // 1. µå¶ø ±ÔÄ¢ Ã£±â
+        // 1. ë“œë ê·œì¹™ ì°¾ê¸°
         var dropData = DataManager.Instance.GetData<DropObjectData>(dropId);
         if (dropData == null)
         {
-            Debug.LogWarning($"DropObjectData {dropId} ¾øÀ½!");
+            Debug.LogWarning($"DropObjectData {dropId} ì—†ìŒ!");
             return;
         }
 
-        // 2. È®·ü Ã¼Å©
+        // 2. í™•ë¥  ì²´í¬
         if (Random.Range(0, 100) >= dropData.probability)
         {
-            Debug.Log($"µå¶ø ½ÇÆĞ (È®·ü {dropData.probability}%)");
+            Debug.Log($"ë“œë ì‹¤íŒ¨ (í™•ë¥  {dropData.probability}%)");
             return;
         }
 
-        // 3. ½ÇÁ¦ ¾ÆÀÌÅÛ Ã£±â
+        // 3. ì‹¤ì œ ì•„ì´í…œ ì°¾ê¸°
         var itemData = DataManager.Instance.GetData<ItemData>(dropData.target);
         if (itemData == null)
         {
-            Debug.LogWarning($"ItemData {dropData.target} ¾øÀ½!");
+            Debug.LogWarning($"ItemData {dropData.target} ì—†ìŒ!");
             return;
         }
 
-        // 4. µå¶ø »ı¼º
+        // 4. ë“œë ìƒì„±
         int count = Random.Range(dropData.minValue, dropData.maxValue + 1);
         for (int i = 0; i < count; i++)
         {
+            if (itemData.prefab == null)
+            {
+                Debug.LogError($"[ItemDropManager] {itemData.rcode} í”„ë¦¬íŒ¹ì´ ì—°ê²°ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
+                continue; // ì•ˆì „í•˜ê²Œ ìŠ¤í‚µ
+            }
+
             var pos = new Vector3(position.x + Random.Range(-0.3f, 0.3f), 0f, position.z + Random.Range(-0.3f, 0.3f));
             var go = Instantiate(itemData.prefab, pos, Quaternion.identity);
 
-            // ÀÚµ¿ Èí¼ö ½ºÅ©¸³Æ® ºÙÀÌ±â
             var pickup = go.GetComponent<ItemPickup>();
             if (pickup == null) pickup = go.AddComponent<ItemPickup>();
             pickup.itemCode = itemData.rcode;
-            pickup.amount = 1; // ÃßÈÄ Á¶Á¤ °¡´É
+            pickup.amount = 1;
         }
 
-
-
     }
+    public void SpawnGold(int amount, Vector3 position)
+    {
+        var itemData = DataManager.Instance.GetData<ItemData>("ITE_GOLD");
+        if (itemData == null || itemData.prefab == null)
+        {
+            Debug.LogError("[ItemDropManager] Gold ì•„ì´í…œ ë°ì´í„°(prefab) ì—†ìŒ!");
+            return;
+        }
+
+        // í•˜ë‚˜ì˜ í° ê¸ˆí™” í”„ë¦¬íŒ¹ìœ¼ë¡œ í‘œì‹œ
+        var go = Instantiate(itemData.prefab, position, Quaternion.identity);
+
+        // ìë™ í¡ìˆ˜ ë¶™ì´ê¸°
+        var pickup = go.GetComponent<ItemPickup>();
+        if (pickup == null) pickup = go.AddComponent<ItemPickup>();
+
+        pickup.isGold = true;     // ğŸ’° ê³¨ë“œ ëª¨ë“œ
+        pickup.amount = amount;   // ì „ì²´ ê¸ˆì•¡
+    }
+
+
 }
+
+

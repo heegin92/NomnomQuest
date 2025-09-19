@@ -4,17 +4,17 @@ public class ItemPickup : MonoBehaviour
 {
     public string itemCode;
     public int amount = 1;
+    public bool isGold = false;   // 💰 골드 전용 여부
 
-    [SerializeField] private float absorbRange = 2.0f;   // 흡수 시작 거리
-    [SerializeField] private float absorbSpeed = 5.0f;   // 흡수 속도
+    [SerializeField] private float absorbRange = 2.0f;
+    [SerializeField] private float absorbSpeed = 5.0f;
 
     private Transform player;
     private bool isAbsorbing = false;
 
     private void Start()
     {
-        // Player 태그로 찾아오기
-        GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+        var pObj = GameObject.FindGameObjectWithTag("Player");
         if (pObj != null) player = pObj.transform;
     }
 
@@ -24,37 +24,32 @@ public class ItemPickup : MonoBehaviour
 
         float dist = Vector3.Distance(transform.position, player.position);
 
-        // 일정 거리 안으로 들어오면 흡수 시작
         if (!isAbsorbing && dist < absorbRange)
-        {
             isAbsorbing = true;
-        }
 
         if (isAbsorbing)
         {
-            // 플레이어 쪽으로 이동
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 player.position,
                 absorbSpeed * Time.deltaTime
             );
 
-            // 충분히 가까워지면 아이템 획득 처리
             if (dist < 0.3f)
             {
-                // 실제 인벤토리에 반영
-                if (InventoryManager.Instance != null)
+                if (isGold)
                 {
-                    InventoryManager.Instance.Add(itemCode, amount);
+                    DataManager.Instance.AddGold(amount);
+                    Debug.Log($"[ItemPickup] 골드 {amount} 획득! 현재 골드: {DataManager.Instance.userInfo.gold}");
                 }
                 else
                 {
-                    Debug.LogWarning("[ItemPickup] InventoryManager 없음! 로그만 표시");
+                    DataManager.Instance.AddItem(itemCode, amount);
+                    Debug.Log($"[ItemPickup] {itemCode} x{amount} 획득!");
                 }
 
                 Destroy(gameObject);
             }
-
         }
     }
 }

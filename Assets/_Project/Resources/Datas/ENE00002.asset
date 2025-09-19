@@ -26,5 +26,5 @@ MonoBehaviour:
   detectRange: 7
   atkRange: 5
   attackCooldown: 1
-  prefab: {fileID: 5514874214879849964, guid: 6e9a3a58d6b1aea48bdaf890fa30c3ce, type: 3}
   DropItems: DRO00001
+  prefab: {fileID: 5514874214879849964, guid: 6e9a3a58d6b1aea48bdaf890fa30c3ce, type: 3}

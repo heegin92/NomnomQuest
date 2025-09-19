@@ -10,21 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d800cc27bf1891d46a2e460555406951, type: 3}
-  m_Name: Gold
+  m_Name: ITE_GOLD
   m_EditorClassIdentifier: 
-  rcode: GOLD
+  rcode: ITE_GOLD
   name: 
   desc: 
   code: 
   displayName: Gold
-  description: "\uC625\uC218\uC218\uB97C \uC774\uC6A9\uD55C \uACE0\uC18C\uD558\uACE0
-    \uBC14\uC0AD\uD55C \uAC04\uC2DD."
-  type: 1
+  description: "\uB3C8"
+  type: 4
   canStack: 1
   maxStackAmount: 0
-  hp: 40
+  hp: 0
   mp: 0
-  hungry: 35
+  hungry: 0
   effect: 0
   equipPrefab: 
   prefab: {fileID: 704004844760971634, guid: 3c53c897c8d321d48ba67cf42e2cbd80, type: 3}
