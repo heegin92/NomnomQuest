@@ -26,4 +26,6 @@ public class GameManager : MonoBehaviour
         if (DataManager.Instance.userInfo == null)
             DataManager.Instance.userInfo = new UserInfo();
     }
+
+
 }

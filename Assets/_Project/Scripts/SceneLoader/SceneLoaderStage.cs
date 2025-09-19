@@ -74,7 +74,16 @@ public class SceneLoaderStage : MonoBehaviour
             Debug.LogWarning("[SceneLoaderStage] VCam 없음");
         }
 #endif
+
+        // ✅ EnemySpawner에게 스폰 시작 신호 보내기
+        var spawners = FindObjectsOfType<EnemySpawner>();
+        foreach (var spawner in spawners)
+        {
+            spawner.BeginSpawn();
+        }
+        Debug.Log("[SceneLoaderStage] EnemySpawner 시작 신호 전송 완료");
     }
+
 
     private void Start()
     {

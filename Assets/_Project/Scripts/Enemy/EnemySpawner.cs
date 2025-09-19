@@ -6,18 +6,26 @@ using System.Collections.Generic;
 public class EnemySpawner : MonoBehaviour
 {
     [Header("스폰 설정")]
-    [SerializeField] private string[] enemyCodes = { "ENE00001" }; // 몬스터 코드들
-    [SerializeField] private int spawnCount = 3;      // 시작할 때 몇 마리 스폰
-    [SerializeField] private float spawnRadius = 5f;  // 스폰 반경
-    [SerializeField] private bool loopSpawn = true;   // 지속 스폰 여부
-    [SerializeField] private float spawnInterval = 5f; // 지속 스폰 간격(초)
-    [SerializeField] private int maxEnemies = 10;     // 동시에 존재할 수 있는 최대 수
+    [SerializeField] private string[] enemyCodes = { "ENE00001" };
+    [SerializeField] private int maxEnemies = 5;         // 씬에 항상 유지할 적 개수
+    [SerializeField] private float spawnRadius = 5f;
+    [SerializeField] private float respawnDelay = 2f;    // 죽은 뒤 리스폰 딜레이
 
     private List<Enemy> activeEnemies = new List<Enemy>();
+    private bool isSpawning = false;
 
     private void Start()
     {
-        StartCoroutine(SpawnWhenReady());
+        BeginSpawn();
+    }
+
+    public void BeginSpawn()
+    {
+        if (!isSpawning)
+        {
+            isSpawning = true;
+            StartCoroutine(SpawnWhenReady());
+        }
     }
 
     private IEnumerator SpawnWhenReady()
@@ -27,27 +35,16 @@ public class EnemySpawner : MonoBehaviour
 
         Debug.Log("[EnemySpawner] DataManager 준비 완료, 몬스터 스폰 시작");
 
-        // 처음에 지정된 수만큼 소환
-        for (int i = 0; i < spawnCount; i++)
+        // 시작 시 maxEnemies 만큼 채움
+        for (int i = 0; i < maxEnemies; i++)
             Spawn();
-
-        // 반복 스폰 모드
-        if (loopSpawn)
-            StartCoroutine(LoopSpawn());
-    }
-
-    private IEnumerator LoopSpawn()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(spawnInterval);
-            if (activeEnemies.Count < maxEnemies)
-                Spawn();
-        }
     }
 
     public Enemy Spawn()
     {
+        if (activeEnemies.Count >= maxEnemies)
+            return null;
+
         string code = enemyCodes[Random.Range(0, enemyCodes.Length)];
         var data = DataManager.Instance.GetData<EnemyData>(code);
         if (data == null || data.prefab == null)
@@ -61,6 +58,13 @@ public class EnemySpawner : MonoBehaviour
         offset.y = 0f;
         Vector3 pos = transform.position + offset;
 
+        // 바닥에 붙이기 (Ground 레이어 필요)
+        if (Physics.Raycast(pos + Vector3.up * 10f, Vector3.down, out RaycastHit hit, 50f, LayerMask.GetMask("Ground")))
+        {
+            pos = hit.point; // 바닥 위 정확한 위치로 수정
+        }
+
+
         GameObject go = Instantiate(data.prefab, pos, Quaternion.identity);
         var enemy = go.GetComponent<Enemy>();
         if (enemy == null)
@@ -72,25 +76,55 @@ public class EnemySpawner : MonoBehaviour
         enemy.SetCode(code);
         activeEnemies.Add(enemy);
 
-        // 죽으면 리스트에서 제거
+        // 죽으면 Spawner에 알리도록 Tracker 부착
         enemy.gameObject.AddComponent<EnemyTracker>().Init(this, enemy);
+
+        // EnemySpawner.Spawn() 안에서
+        var anim = enemy.GetComponentInChildren<Animator>();
+        if (anim != null)
+        {
+            // Spawn 애니메이션 실행
+            anim.Play("Spawn", -1, 0f);
+
+        }
+
 
         Debug.Log($"[EnemySpawner] {code} 소환 성공! 현재 수: {activeEnemies.Count}");
         return enemy;
     }
+    private IEnumerator PlaySpawnAndIdle(Animator anim)
+    {
+        // 현재 실행 중인 클립 길이 가져오기
+        AnimatorClipInfo[] clipInfo = anim.GetCurrentAnimatorClipInfo(0);
+        float length = clipInfo.Length > 0 ? clipInfo[0].clip.length : 1f;
 
-    // Enemy 죽으면 리스트에서 제거하기 위한 헬퍼
+        yield return new WaitForSeconds(length);
+
+        anim.Play("Idle");
+    }
+
+
     public void RemoveEnemy(Enemy enemy)
     {
         if (activeEnemies.Contains(enemy))
         {
             activeEnemies.Remove(enemy);
             Debug.Log($"[EnemySpawner] {enemy.name} 제거됨. 현재 수: {activeEnemies.Count}");
+
+            // 2초 뒤 다시 채움
+            StartCoroutine(RespawnAfterDelay());
         }
+    }
+
+    private IEnumerator RespawnAfterDelay()
+    {
+        yield return new WaitForSeconds(respawnDelay);
+
+        if (activeEnemies.Count < maxEnemies)
+            Spawn();
     }
 }
 
-// Enemy가 Destroy될 때 Spawner에 알려주는 컴포넌트
 public class EnemyTracker : MonoBehaviour
 {
     private EnemySpawner spawner;

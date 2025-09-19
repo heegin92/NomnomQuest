@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7473842703856018427}
   - component: {fileID: 7241519489779058316}
   - component: {fileID: 5886590509824511768}
+  - component: {fileID: 3969352622782526550}
   m_Layer: 0
   m_Name: PF_GoldDrop
   m_TagString: Untagged
@@ -103,6 +104,7 @@ MonoBehaviour:
   isGold: 0
   absorbRange: 3
   absorbSpeed: 5
+  autoAbsorbTime: 5
 --- !u!135 &5886590509824511768
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -124,3 +126,16 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.25
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3969352622782526550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 704004844760971634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7378a760c40726f4e9d9db69e92289d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  precision: 100
