@@ -909,7 +909,11 @@ MonoBehaviour:
   attackCooldown: 0.5
   attackDamage: 7
   wanderRadius: 5
-  wanderInterval: 3
+  wanderInterval: 5
+  enableIdleRegen: 1
+  regenAmount: 2
+  regenInterval: 1
+  regenDelay: 3
 --- !u!136 &3106233151141584681
 CapsuleCollider:
   m_ObjectHideFlags: 0

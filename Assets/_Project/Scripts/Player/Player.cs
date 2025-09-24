@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
@@ -22,6 +23,12 @@ public class Player : MonoBehaviour
     [SerializeField] private float wanderRadius = 5f;
     [SerializeField] private float wanderInterval = 3f;
 
+    [Header("체력 회복 설정")]
+    [SerializeField] private bool enableIdleRegen = true;  // On/Off
+    [SerializeField] private int regenAmount = 2;          // 회복량
+    [SerializeField] private float regenInterval = 1f;     // 초당 회복 주기
+    [SerializeField] private float regenDelay = 3f; // 전투 Idle 대기 시간
+
     // ✅ HP 관리
     public int CurrentHP
     {
@@ -37,6 +44,9 @@ public class Player : MonoBehaviour
 
     private Animator animator;
     private float lastAttackTime = -999f;
+
+    private float lastRegenTime = 0f;
+    private float idleStartTime = 0f;
 
     // ✅ 렌더러 캐싱
     private Renderer[] renderers;
@@ -72,8 +82,6 @@ public class Player : MonoBehaviour
         else
             Debug.LogWarning("[Player] HUD 연결 실패");
 
-        CurrentHP = MaxHP;
-        data.exp = 0;
 
         // ✅ 실행 시작 시 Idle로 고정
         if (animator != null)
@@ -91,6 +99,40 @@ public class Player : MonoBehaviour
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             SetTarget(Input.GetTouch(0).position);
 
+        // ✅ 체력 회복
+        if (enableIdleRegen && CurrentHP > 0 && Time.time >= lastRegenTime + regenInterval)
+        {
+            if (GameManager.Instance != null && GameManager.Instance.IsTown)
+            {
+                // ⭐ 마을: 무조건 회복
+                RegenerateHealth(regenAmount);
+                lastRegenTime = Time.time;
+            }
+            else
+            {
+                // ⭐ 전투 맵: Idle 유지 시간 체크
+                bool isIdle = !isMoving &&
+                              animator != null &&
+                              animator.GetBool("IsMove") == false &&
+                              !animator.GetCurrentAnimatorStateInfo(0).IsName("Attack");
+
+                if (isIdle)
+                {
+                    if (idleStartTime == 0f) idleStartTime = Time.time;
+
+                    if (Time.time >= idleStartTime + regenDelay)
+                    {
+                        RegenerateHealth(regenAmount);
+                        lastRegenTime = Time.time;
+                    }
+                }
+                else
+                {
+                    idleStartTime = 0f; // Idle 깨지면 초기화
+                }
+            }
+        }
+
         if (GameManager.Instance != null && GameManager.Instance.IsTown)
         {
             return;
@@ -100,7 +142,21 @@ public class Player : MonoBehaviour
         TryAutoAttack();
     }
 
+    private void RegenerateHealth(int amount)
+    {
+        if (CurrentHP < MaxHP)
+        {
+            CurrentHP = Mathf.Min(CurrentHP + amount, MaxHP);
 
+            if (DataManager.Instance != null && DataManager.Instance.userInfo != null)
+            {
+                DataManager.Instance.userInfo.health = CurrentHP;
+                DataManager.Instance.SaveData(); // ⭐ 저장 추가
+            }
+
+            Debug.Log($"[Player] Idle 회복 +{amount} → {CurrentHP}/{MaxHP}");
+        }
+    }
     private void FixedUpdate()
     {
         if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
@@ -174,7 +230,52 @@ public class Player : MonoBehaviour
         Debug.Log("플레이어 사망!");
         isMoving = false;
         if (animator != null) animator.SetBool("IsMove", false);
-        StartCoroutine(FadeOutAndDestroy());
+
+        StartCoroutine(GoBackToTown());
+    }
+
+    private IEnumerator GoBackToTown()
+    {
+        // 1초 동안 페이드 아웃
+        float duration = 1f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].material.HasProperty("_Color"))
+                {
+                    Color c = originalColors[i];
+                    c.a = alpha;
+                    renderers[i].material.color = c;
+                }
+            }
+            yield return null;
+        }
+
+        // ✅ 체력 5% 회복 (최소 1 보장)
+        int reviveHP = Mathf.Max(1, Mathf.RoundToInt(MaxHP * 0.05f));
+        data.health = reviveHP;
+
+        // ✅ 골드 10% 차감
+        int lostGold = Mathf.FloorToInt(data.gold * 0.1f);
+        data.gold = Mathf.Max(0, data.gold - lostGold);
+
+        if (DataManager.Instance != null && DataManager.Instance.userInfo != null)
+        {
+            DataManager.Instance.userInfo.health = reviveHP;
+            DataManager.Instance.userInfo.gold = data.gold;
+            DataManager.Instance.SaveData();
+        }
+
+        Debug.Log($"[Player] 사망 패널티 적용 → HP {reviveHP}/{MaxHP}, GOLD -{lostGold}, 남은 {data.gold}");
+
+        // ✅ 마을 씬으로 이동
+        SceneManager.LoadScene("TownScene");
     }
 
     private IEnumerator FadeOutAndDestroy()
