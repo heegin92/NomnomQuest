@@ -489,6 +489,7 @@ MonoBehaviour:
   townPrefab: {fileID: 3816213266977382834, guid: dd0a0626262d74c4dbbe73c9c390f0b5, type: 3}
   playerPrefab: {fileID: 5352673630492711781, guid: 7dcaea5d99bcbf7498c7341ab3ba793d, type: 3}
   spawnPoint: {fileID: 0}
+  spawnFallback: {x: 0, y: 0, z: 0}
   townBGM: {fileID: 0}
 --- !u!4 &418943841
 Transform:

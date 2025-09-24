@@ -91,11 +91,8 @@ public class Player : MonoBehaviour
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             SetTarget(Input.GetTouch(0).position);
 
-        // ✅ 마을일 경우: 무조건 Idle 유지 (걷는 애니 강제 OFF)
         if (GameManager.Instance != null && GameManager.Instance.IsTown)
         {
-            isMoving = false;
-            if (animator != null) animator.SetBool("IsMove", false); // 🔥 Idle 고정
             return;
         }
 
@@ -125,13 +122,17 @@ public class Player : MonoBehaviour
                     transform.localScale = new Vector3(-1, 1, 1);
             }
 
-            if (isMoving && Vector3.Distance(rb.position, targetPos) < 0.05f)
+            // ✅ 도착했으면 Idle 전환
+            if (Vector3.Distance(rb.position, targetPos) < 0.05f)
             {
                 isMoving = false;
                 if (animator != null) animator.SetBool("IsMove", false);
             }
-
-
+        }
+        else
+        {
+            // ✅ 이동이 끝나면 Idle 유지
+            if (animator != null) animator.SetBool("IsMove", false);
         }
     }
 
