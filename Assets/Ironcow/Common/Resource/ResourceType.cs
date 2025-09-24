@@ -3,6 +3,7 @@ public static partial class ResourceType
 {
     public const string Datas = "Datas";
     public const string FontsMaterials = "Fonts & Materials";
+    public const string Maps = "Maps";
     public const string Prefabs = "Prefabs";
     public const string SpriteAssets = "Sprite Assets";
     public const string StyleSheets = "Style Sheets";

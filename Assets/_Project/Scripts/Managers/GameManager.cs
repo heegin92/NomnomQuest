@@ -7,6 +7,9 @@ public class GameManager : MonoBehaviour
     public Player Player { get; set; }
     public int CurrentStage { get; set; }   // ✅ object → int 로 변경
 
+    public bool IsTown { get; set; }   // ✅ 현재 스테이지가 마을인지 여부
+
+
     public BattleManager battleManager;
     public InventoryManager inventoryManager;
     public PlayerData playerData;
@@ -26,6 +29,5 @@ public class GameManager : MonoBehaviour
         if (DataManager.Instance.userInfo == null)
             DataManager.Instance.userInfo = new UserInfo();
     }
-
 
 }

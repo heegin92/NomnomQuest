@@ -64,7 +64,6 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        // ✅ HUD 먼저 연결
         if (hud == null)
             hud = FindObjectOfType<PlayerHUD>();
 
@@ -73,26 +72,37 @@ public class Player : MonoBehaviour
         else
             Debug.LogWarning("[Player] HUD 연결 실패");
 
-        // ✅ HP/EXP 초기화는 HUD 연결 이후에
         CurrentHP = MaxHP;
         data.exp = 0;
-    }
 
+        // ✅ 실행 시작 시 Idle로 고정
+        if (animator != null)
+            animator.SetBool("IsMove", false);
+    }
 
 
     private void Update()
     {
-        // PC 클릭 이동
+        // ✅ PC 클릭 이동
         if (Input.GetMouseButtonDown(0))
             SetTarget(Input.mousePosition);
 
-        // 모바일 터치 이동
+        // ✅ 모바일 터치 이동
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             SetTarget(Input.GetTouch(0).position);
 
-        // 자동 공격 체크
+        // ✅ 마을일 경우: 무조건 Idle 유지 (걷는 애니 강제 OFF)
+        if (GameManager.Instance != null && GameManager.Instance.IsTown)
+        {
+            isMoving = false;
+            if (animator != null) animator.SetBool("IsMove", false); // 🔥 Idle 고정
+            return;
+        }
+
+        // ✅ 전투맵일 때만 자동공격 실행
         TryAutoAttack();
     }
+
 
     private void FixedUpdate()
     {
@@ -115,11 +125,13 @@ public class Player : MonoBehaviour
                     transform.localScale = new Vector3(-1, 1, 1);
             }
 
-            if (Vector3.Distance(rb.position, targetPos) < 0.05f)
+            if (isMoving && Vector3.Distance(rb.position, targetPos) < 0.05f)
             {
                 isMoving = false;
                 if (animator != null) animator.SetBool("IsMove", false);
             }
+
+
         }
     }
 
@@ -221,14 +233,29 @@ public class Player : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, LayerMask.GetMask("Ground")))
         {
-            targetPos = new Vector3(hit.point.x, 0f, hit.point.z);
+            Vector3 newTarget = new Vector3(hit.point.x, 0f, hit.point.z);
+
+            // ✅ 너무 가까우면 이동 취소 → Idle 유지
+            if (Vector3.Distance(transform.position, newTarget) < 0.1f)
+            {
+                isMoving = false;
+                if (animator != null) animator.SetBool("IsMove", false);
+                return;
+            }
+
+            targetPos = newTarget;
             isMoving = true;
             if (animator != null) animator.SetBool("IsMove", true);
         }
     }
 
+
     private void TryAutoAttack()
     {
+        // ✅ 마을일 때는 실행하지 않음
+        if (GameManager.Instance != null && GameManager.Instance.IsTown)
+            return;
+
         if (Time.time < lastAttackTime + attackCooldown)
             return;
 
@@ -274,6 +301,7 @@ public class Player : MonoBehaviour
         }
         else
         {
+            // ✅ 전투맵일 때만 배회 허용
             if (Time.time > lastWanderTime + wanderInterval && !isMoving)
             {
                 lastWanderTime = Time.time;

@@ -15,11 +15,6 @@ public class PlayerHUD : MonoBehaviour
 
     private Player player;
 
-    private void Awake()
-    {
-        Debug.Log("[PlayerHUD] Awake 실행됨");
-    }
-
     private void OnEnable()
     {
         // ⭐ 이벤트 구독
@@ -34,7 +29,9 @@ public class PlayerHUD : MonoBehaviour
 
     private void Start()
     {
-        player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+        if (player == null)
+            player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+
         if (player == null)
         {
             Debug.LogWarning("[PlayerHUD] Start에서 Player 못 찾음!");
@@ -46,7 +43,8 @@ public class PlayerHUD : MonoBehaviour
 
         // 초기화 시 한 번 반영
         UpdateHUD();
-        UpdateGoldUI(DataManager.Instance.userInfo.gold);
+        if (DataManager.Instance != null && DataManager.Instance.userInfo != null)
+            UpdateGoldUI(DataManager.Instance.userInfo.gold);
     }
 
     private void Update()
@@ -82,5 +80,12 @@ public class PlayerHUD : MonoBehaviour
     {
         if (goldText != null)
             goldText.text = $"{newGold} G";
+    }
+
+    // ⭐ Player 직접 연결 메서드
+    public void SetPlayer(Player p)
+    {
+        player = p;
+        Debug.Log("[PlayerHUD] Player 연결 완료: " + player.name);
     }
 }
