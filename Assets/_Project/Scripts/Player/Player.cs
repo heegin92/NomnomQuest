@@ -93,11 +93,11 @@ public class Player : MonoBehaviour
     {
         // ✅ PC 클릭 이동
         if (Input.GetMouseButtonDown(0))
-            SetTarget(Input.mousePosition);
+            ForceMove(Input.mousePosition);
 
         // ✅ 모바일 터치 이동
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-            SetTarget(Input.GetTouch(0).position);
+            ForceMove(Input.GetTouch(0).position);
 
         // ✅ 체력 회복
         if (enableIdleRegen && CurrentHP > 0 && Time.time >= lastRegenTime + regenInterval)
@@ -142,6 +142,25 @@ public class Player : MonoBehaviour
         TryAutoAttack();
     }
 
+    private void ForceMove(Vector3 screenPos)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(screenPos);
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, LayerMask.GetMask("Ground")))
+        {
+            targetPos = new Vector3(hit.point.x, 0f, hit.point.z);
+            isMoving = true;
+
+            // ⭐ 공격 중이라도 이동 입력이 들어오면 공격 끊고 이동
+            if (animator != null)
+            {
+                animator.ResetTrigger("IsAttack");
+                animator.SetBool("IsMove", true);
+            }
+
+            Debug.Log("[Player] 강제 이동 입력 → 공격 중단 후 이동: " + targetPos);
+        }
+    }
+
     private void RegenerateHealth(int amount)
     {
         if (CurrentHP < MaxHP)
@@ -159,9 +178,6 @@ public class Player : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (animator != null && animator.GetCurrentAnimatorStateInfo(0).IsName("Attack"))
-            return;
-
         if (isMoving)
         {
             Vector3 newPos = Vector3.MoveTowards(rb.position, targetPos, moveSpeed * Time.fixedDeltaTime);
