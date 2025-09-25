@@ -6,10 +6,17 @@ using System.Collections.Generic;
 
 public partial class DataManager : DataManagerBase<DataManager, UserInfo>
 {
+    [Header("데이터베이스")]
+    [SerializeField] private List<ItemData> itemDatabase; // 아이템 데이터베이스 (SO 리스트)
+
     public static DataManager Instance => instance;
     private string savePath;
+
     // ⭐ 골드 변경 이벤트
     public static event Action<int> OnGoldChanged;
+
+    // 내부 캐싱용 Dictionary
+    private Dictionary<string, ItemData> itemDict;
 
     private async void Awake()
     {
@@ -21,6 +28,14 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
         if (!isInit)
             await Init();
 
+        // ✅ ItemData 캐싱
+        itemDict = new Dictionary<string, ItemData>();
+        foreach (var item in itemDatabase)
+        {
+            if (item != null && !itemDict.ContainsKey(item.code))
+                itemDict.Add(item.code, item);
+        }
+
         LoadData();
     }
 
@@ -29,7 +44,6 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
     {
         if (userInfo == null) return;
 
-        // Dictionary를 JSON으로 저장하기 위해 래퍼 사용
         SaveWrapper wrapper = new SaveWrapper(userInfo);
         string json = JsonUtility.ToJson(wrapper, true);
 
@@ -54,6 +68,16 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
         }
     }
 
+    // ✅ ItemData 가져오기
+    public ItemData GetItemData(string itemCode)
+    {
+        if (itemDict != null && itemDict.TryGetValue(itemCode, out var data))
+            return data;
+
+        Debug.LogWarning($"[DataManager] ItemData를 찾을 수 없음 → {itemCode}");
+        return null;
+    }
+
     // ✅ 인벤토리 추가
     public void AddItem(string itemCode, int amount = 1)
     {
@@ -62,6 +86,11 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
 
         userInfo.inventory[itemCode] += amount;
         SaveData();
+
+        // 디버그용
+        ItemData itemData = GetItemData(itemCode);
+        string name = itemData != null ? itemData.displayName : itemCode;
+        Debug.Log($"[DataManager] 아이템 추가됨: {name} x{amount} (총 {userInfo.inventory[itemCode]})");
     }
 
     // ✅ 아이템 개수 확인
@@ -120,6 +149,8 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
             return info;
         }
     }
+
+    // ✅ 골드 추가
     public void AddGold(int amount)
     {
         if (userInfo == null) userInfo = new UserInfo();
@@ -132,5 +163,4 @@ public partial class DataManager : DataManagerBase<DataManager, UserInfo>
         // ⭐ 이벤트 호출
         OnGoldChanged?.Invoke(userInfo.gold);
     }
-
 }

@@ -157,7 +157,6 @@ public class Player : MonoBehaviour
                 animator.SetBool("IsMove", true);
             }
 
-            Debug.Log("[Player] 강제 이동 입력 → 공격 중단 후 이동: " + targetPos);
         }
     }
 
